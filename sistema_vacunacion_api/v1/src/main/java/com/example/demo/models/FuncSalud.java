@@ -60,17 +60,6 @@ public class FuncSalud extends Usuario implements Notificable{
     }
 
 
-    @Override
-    public String getMensajeCita(Cita cita) {
-        String mensaje = "Estimado Funcionario.\n" +
-                "Usted " +
-                cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() +
-                ". Tiene que aplicar una vacuna " + cita.getVacuna().getTipoVacuna().getNombre() + " ,en el centro " + cita.getCentroVacunacion().getNombre() +
-                ".\nUbicacado en " + cita.getCentroVacunacion().getDireccion() +
-                ".\nEl horario de vacunación es " + cita.getFecha_hora() +
-                " y atenderá a " + cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos();
-        return mensaje;
-    }
 
     @Override
     public DatosContactoDestinatario getDatosContactoDestinatario() {

@@ -37,19 +37,6 @@ public class Paciente extends Usuario implements Notificable {
         return getPreferencia();
     }
 
-    @Override
-    public String getMensajeCita(Cita cita) {
-        String mensaje = "Estimado Paciente.\n" +
-                "Usted " +
-                cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos() +
-                " tiene una cita para vacunarse contra " + cita.getCampania().getNombre() +
-                ".\n Se le aplicará la vacuna "+ cita.getVacuna().getTipoVacuna().getNombre() + " ,en el centro " + cita.getCentroVacunacion().getNombre() +
-                ".\nUbicado en " + cita.getCentroVacunacion().getDireccion() +
-                ".\nEl horario a asistir es " + cita.getFecha_hora() +
-                " y será atendido por " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() +
-                ".\nEsperamos su asistencia y puntualidad.";
-        return mensaje;
-    }
 
     @Override
     public DatosContactoDestinatario getDatosContactoDestinatario() {
