@@ -10,8 +10,8 @@ public class CorreoElectronico implements Notificacion{
         this.emailService = emailService;
     }
     @Override
-    public void enviarMensaje(DatosContactoDestinatario destinatario, String mensaje) {
+    public void enviarMensaje(DatosContactoDestinatario destinatario, String asunto, String mensaje) {
       
-        emailService.sendEmail(destinatario.correoElectronico(), "cita vacunanción", mensaje);
+        emailService.sendEmail(destinatario.correoElectronico(), asunto, mensaje);
     }
 }
