@@ -26,7 +26,7 @@ public class FuncSalud extends Usuario implements Notificable{
     @JoinColumn(name = "centro_id")
     private CentroVacunacion centroVacunacion;
     
-    public FuncSalud(String RUT, String nombres, String apellidos, Integer fono, String correoElectronico, LocalDate fechaNacimiento, ArrayList<HorarioFs> horarios, NotificacionPreferencia preferencia, CentroVacunacion
+    public FuncSalud(String RUT, String nombres, String apellidos, String fono, String correoElectronico, LocalDate fechaNacimiento, ArrayList<HorarioFs> horarios, NotificacionPreferencia preferencia, CentroVacunacion
         centroVacunacion
     ) {
           super(RUT, nombres, apellidos, fono, correoElectronico, fechaNacimiento, preferencia);
@@ -70,5 +70,10 @@ public class FuncSalud extends Usuario implements Notificable{
                 ".\nEl horario de vacunación es " + cita.getFecha_hora() +
                 " y atenderá a " + cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos();
         return mensaje;
+    }
+
+    @Override
+    public DatosContactoDestinatario getDatosContactoDestinatario() {
+        return new DatosContactoDestinatario(getCorreoElectronico(), getFono());
     }
 }

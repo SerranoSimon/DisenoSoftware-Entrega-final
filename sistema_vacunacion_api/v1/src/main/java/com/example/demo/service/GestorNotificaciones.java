@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.models.Cita;
@@ -14,7 +15,8 @@ import com.example.demo.models.SMSFactory;
 // Clase experta en gestionar la forma en que se notifica.
 @Service
 public class GestorNotificaciones {
-
+    @Autowired
+    EmailService emailService;
     public void notificarCita(Cita cita) {
         notificarDestinatario(cita.getPaciente(), cita);
         notificarDestinatario(cita.getFuncSalud(), cita);
@@ -24,13 +26,13 @@ public class GestorNotificaciones {
         NotificacionFactory factory = getFactory(preferencia);
         String mensaje = destinatario.getMensajeCita(cita);
         Notificacion notificacion = factory.crearNotificacion();
-        notificacion.enviarMensaje(mensaje);
+        notificacion.enviarMensaje(destinatario.getDatosContactoDestinatario(), mensaje);
     }
     private NotificacionFactory getFactory(NotificacionPreferencia pref) {
         return switch (pref) {
             case SMS -> new SMSFactory();
-            case CORREOELECTRONICO -> new CorreoFactory();
-            case AMBOS -> new NotificacionDobleFactory();
+            case CORREOELECTRONICO -> new CorreoFactory(emailService);
+            case AMBOS -> new NotificacionDobleFactory(emailService);
         };
     }
 }

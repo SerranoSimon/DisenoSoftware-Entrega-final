@@ -22,7 +22,7 @@ public class Paciente extends Usuario implements Notificable {
     private List<Cita> citas;
 
 
-    public Paciente(String RUT, String nombres, String apellidos, Integer fono, String correoElectronico, LocalDate fechaNacimiento, NotificacionPreferencia preferencia) {
+    public Paciente(String RUT, String nombres, String apellidos, String fono, String correoElectronico, LocalDate fechaNacimiento, NotificacionPreferencia preferencia) {
         super(RUT, nombres, apellidos, fono, correoElectronico, fechaNacimiento, preferencia);
         this.citas= new ArrayList<>();
     }
@@ -50,5 +50,12 @@ public class Paciente extends Usuario implements Notificable {
                 ".\nEsperamos su asistencia y puntualidad.";
         return mensaje;
     }
+
+    @Override
+    public DatosContactoDestinatario getDatosContactoDestinatario() {
+        return new DatosContactoDestinatario(getCorreoElectronico(), getFono());
+    }
+
+
 
 }

@@ -35,24 +35,20 @@ public class GestorCitas {
     @Transactional
     // Crear cita usa al experto ValidarCita para ver si es posible crearla.
     public Cita crearCita(Paciente paciente, LocalDateTime fecha_hora, Long id_centro, Long id_campania) {
-            ResultadoValidacion resultadoValidacion= validadorCita.validarCita(fecha_hora,id_centro,id_campania);
-        if(resultadoValidacion!=null){
+            
+        ResultadoValidacion resultadoValidacion= validadorCita.validarCita(fecha_hora,id_centro,id_campania);
+        
+        FuncSalud fs = resultadoValidacion.funcionario();
+        CentroVacunacion centro = resultadoValidacion.centro();
+        Vacuna v = resultadoValidacion.vacuna();
+        Campania campania = resultadoValidacion.campania();
+        Cita cita = new Cita(paciente, fs, fecha_hora, centro, v,campania);
+        gestorNotificaciones.notificarCita(cita);
 
-            FuncSalud fs = resultadoValidacion.funcionario();
-            CentroVacunacion centro = resultadoValidacion.centro();
-            Vacuna v = resultadoValidacion.vacuna();
-            Campania campania = resultadoValidacion.campania();
-            Cita cita = new Cita(paciente, fs, fecha_hora, centro, v,campania);
-            gestorNotificaciones.notificarCita(cita);
-
-            // equivalente a citaRepo.agregarCita(cita)
-            citaRepo.save(cita);
-            return cita;
-        } else{
-            System.out.println("La cita no se puede llevar acabo");
-            return null;
-        }
-
+        // equivalente a citaRepo.agregarCita(cita)
+        citaRepo.save(cita);
+        return cita;
+    
     }
 
 

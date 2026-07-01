@@ -10,8 +10,9 @@ public class NotificacionDoble implements  Notificacion{
     }
 
     @Override
-    public void enviarMensaje(String mensaje) {
-        sms.enviarMensaje(mensaje);
-        correo.enviarMensaje(mensaje);
+    public void enviarMensaje(DatosContactoDestinatario destinatario, String mensaje) {
+        sms.enviarMensaje(destinatario, mensaje);
+        correo.enviarMensaje(destinatario, mensaje);
     }
+
 }

@@ -10,7 +10,6 @@ import java.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 
 import com.example.demo.models.Campania;
@@ -138,22 +137,22 @@ public class DemoApplication {
 
             // 6. --- FUNCIONARIOS DE SALUD ---
             FuncSalud func1 = new FuncSalud("12345678-9", "Carlos", "Pérez",
-                    912345678, "sserrano2024@inf.udec.cl",
+                    "912345678", "serranosimon21@gmail.com",
                     LocalDate.of(1985, 3, 15), null,
                     NotificacionPreferencia.CORREOELECTRONICO,
                     centro1);
             FuncSalud func2 = new FuncSalud("98765432-1", "Ana", "González",
-                    923738870, "sserrano2024@inf.udec.cl",
+                    "923738870", "serranosimon21@gmail.com",
                     LocalDate.of(1990, 7, 20), null,
                     NotificacionPreferencia.SMS,
                     centro1);
             FuncSalud func3 = new FuncSalud("22121545-1", "Alfredo", "Castro",
-                    923738870, "sserrano2024@inf.udec.cl",
+                    "923738870", "serranosimon21@gmail.com",
                     LocalDate.of(1990, 7, 20), null,
                     NotificacionPreferencia.SMS,
                     centro2);
             FuncSalud func4 = new FuncSalud("21955190-3", "Thomas", "Sankara",
-                    923738870, "sserrano2024@inf.udec.cl",
+                    "923738870", "serranosimon21@gmail.com",
                     LocalDate.of(1990, 7, 20), null,
                     NotificacionPreferencia.SMS,
                     centro2);                                
@@ -190,17 +189,17 @@ public class DemoApplication {
 
             // 8. --- PACIENTES ---
             Paciente paciente1 = new Paciente("7382025-1", "María", "López",
-                    923738870, "sserrano2024@inf.udec.cl",
+                    "923738870", "serranosimon21@gmail.com",
                     LocalDate.of(1995, 5, 10),
                     NotificacionPreferencia.AMBOS);
             Paciente paciente2 = new Paciente("140349593", "Juan", "Martínez",
-                    923738870, "sserrano2024@inf.udec.cl",
+                    "923738870", "serranosimon21@gmail.com",
                     LocalDate.of(1988, 11, 25),
                     NotificacionPreferencia.SMS);
             
             pacienteRepo.saveAll(List.of(paciente1, paciente2));
 
-             //paciente1.solicitarCita(1L, 1L, LocalDateTime.of(2026, 06, 30, 20, 10), gestorCitas);
+             paciente1.solicitarCita(1L, 2L, LocalDateTime.of(2026, 7, 3, 14, 0), gestorCitas);
              //funcSaludService.registrarVacunacion(1L,"11111111-1", "12345678-9", "sin obs");
         };
     }
