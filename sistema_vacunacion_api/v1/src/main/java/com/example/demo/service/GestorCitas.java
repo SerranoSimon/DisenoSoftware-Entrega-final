@@ -1,8 +1,5 @@
 package com.example.demo.service;
-import java.beans.Transient;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +40,7 @@ public class GestorCitas {
         Vacuna v = resultadoValidacion.vacuna();
         Campania campania = resultadoValidacion.campania();
         Cita cita = new Cita(paciente, fs, fecha_hora, centro, v,campania);
-        gestorNotificaciones.notificarCita(cita);
+        gestorNotificaciones.notificarConfirmacionCita(cita);
 
         // equivalente a citaRepo.agregarCita(cita)
         citaRepo.save(cita);
