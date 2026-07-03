@@ -196,10 +196,12 @@ public class DemoApplication {
                     "923738870", "serranosimon21@gmail.com",
                     LocalDate.of(1988, 11, 25),
                     NotificacionPreferencia.SMS);
+
+            LocalDateTime proximoLunes10am = LocalDate.now().with(java.time.temporal.TemporalAdjusters.next(DayOfWeek.MONDAY)).atTime(10, 0); // Cambio
             
             pacienteRepo.saveAll(List.of(paciente1, paciente2));
 
-             paciente1.solicitarCita(1L, 2L, LocalDateTime.of(2026, 7, 3, 14, 0), gestorCitas);
+             paciente1.solicitarCita(1L, 1L, proximoLunes10am, gestorCitas); //Cambio
              //funcSaludService.registrarVacunacion(1L,"11111111-1", "12345678-9", "sin obs");
         };
     }
