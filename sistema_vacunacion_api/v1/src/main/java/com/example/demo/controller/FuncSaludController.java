@@ -6,6 +6,7 @@ import com.example.demo.exceptions.ValidacionCitaException;
 import com.example.demo.models.Cita;
 import com.example.demo.models.Vacunacion;
 import com.example.demo.repository.CitaRepo;
+import com.example.demo.service.CitaService;
 import com.example.demo.service.FuncSaludService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class FuncSaludController {
 
     private final FuncSaludService funcSaludService;
-    private final CitaRepo citaRepo;
+    private final CitaService citaService;
 
     // El funcionario sale del token; el paciente se deriva de la cita.
     @PostMapping
     @PreAuthorize("hasRole('FUNCIONARIO')")
     public ResponseEntity<VacunacionResponseDTO> registrarVacunacion(@RequestBody VacunacionRequestDTO dto, Authentication auth) {
-        Cita cita = citaRepo.findById(dto.idCita())
-                .orElseThrow(() -> new ValidacionCitaException("Cita no encontrada"));
+        Cita cita = citaService.bus
 
         String rutFuncionario = auth.getName();
         String rutPaciente = cita.getPaciente().getRUT();

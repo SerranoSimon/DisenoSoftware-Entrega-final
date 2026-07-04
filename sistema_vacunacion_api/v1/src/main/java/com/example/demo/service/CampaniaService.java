@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.models.Campania;
 import com.example.demo.models.StockVacuna;
 import com.example.demo.repository.CampaniaRepo;
-import com.example.demo.repository.StockVacunaRepo;
+
 
 import lombok.AllArgsConstructor;
 
@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 public class CampaniaService {
 
     private final CampaniaRepo campaniaRepo;
-    private final StockVacunaRepo stockVacunaRepo; 
+    private final StockVacunaService stockVacunaService; 
 
 
     @Transactional
@@ -25,8 +25,7 @@ public class CampaniaService {
                 .orElseThrow(() -> new RuntimeException("Campaña no encontrada"));
 
         // Buscamos el stock de la vacuna
-        StockVacuna stock = stockVacunaRepo.findById(idStockVacuna)
-                .orElseThrow(() -> new RuntimeException("Stock no encontrado"));
+        StockVacuna stock = stockVacunaService.buscarPorId(idStockVacuna);
 
         // 3. Usamos el método de la entidad
         campania.agregarStockVacunas(stock);

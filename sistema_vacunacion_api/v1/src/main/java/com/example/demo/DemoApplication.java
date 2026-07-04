@@ -28,8 +28,6 @@ import com.example.demo.models.Vacuna;
 import com.example.demo.repository.CampaniaRepo;
 import com.example.demo.repository.CentrosRepo;
 import com.example.demo.repository.FuncSaludRepo;
-import com.example.demo.repository.HorarioCentroRepo;
-import com.example.demo.repository.HorarioFsRepo;
 import com.example.demo.repository.PacienteRepo;
 import com.example.demo.repository.StockVacunaRepo;
 import com.example.demo.repository.TipoVacunaRepo;
@@ -56,8 +54,6 @@ public class DemoApplication {
             VacunaRepo vacunaRepo,
             TipoVacunaRepo tipoVacunaRepo,
             StockVacunaRepo stockVacunaRepo,
-            HorarioCentroRepo horarioCentroRepo,
-            HorarioFsRepo horarioFsRepo,
             FuncSaludService funcSaludService,
             GestorCitas gestorCitas,
             PasswordEncoder passwordEncoder
@@ -86,9 +82,23 @@ public class DemoApplication {
             campania2 = campaniaRepo.save(campania2);    
             // 2. --- CENTROS DE VACUNACIÓN ---
             CentroVacunacion centro1 = new CentroVacunacion(null, "CESFAM O'Higgins ",
-                    "CESFAM", "Salas 538, Concepción", new ArrayList<>(), null, null, null);
+                    "CESFAM", "Salas 538, Concepción", new ArrayList<>(), null, new ArrayList<>(), null);
             CentroVacunacion centro2 = new CentroVacunacion(null, "CESFAM Víctor Manuel Fernández",
-                    "CESFAM", "Maipú 2120, Concepción", new ArrayList<>(), null, null, null);
+                    "CESFAM", "Maipú 2120, Concepción", new ArrayList<>(), null,new ArrayList<>(), null);
+          
+           // 5. --- HORARIOS CENTRO ---
+            HorarioCentro hc1 = new HorarioCentro(null, DayOfWeek.MONDAY,
+                    LocalTime.of(8, 0), LocalTime.of(18, 0), centro1);
+                centro1.getHorarios().add(hc1);
+            HorarioCentro hc2 = new HorarioCentro(null, DayOfWeek.TUESDAY,
+                    LocalTime.of(8, 0), LocalTime.of(18, 0), centro1);
+                centro1.getHorarios().add(hc2);
+            HorarioCentro hc3 = new HorarioCentro(null, DayOfWeek.WEDNESDAY,
+                    LocalTime.of(9, 0), LocalTime.of(18, 0), centro2);
+                centro2.getHorarios().add(hc3);
+            HorarioCentro hc4 = new HorarioCentro(null, DayOfWeek.FRIDAY,
+                    LocalTime.of(9, 0), LocalTime.of(15, 0), centro2);                    
+                centro2.getHorarios().add(hc4);
             
             // Guardamos los centros para generar sus IDs de inmediato
             centroRepo.saveAll(List.of(centro1, centro2));
@@ -122,40 +132,27 @@ public class DemoApplication {
             vacunaRepo.saveAll(vacunasAstrazeneca);
             vacunaRepo.saveAll(vacunasInfluvac);
 
-            // 5. --- HORARIOS CENTRO ---
-            HorarioCentro hc1 = new HorarioCentro(null, DayOfWeek.MONDAY,
-                    LocalTime.of(8, 0), LocalTime.of(18, 0), centro1);
 
-            HorarioCentro hc2 = new HorarioCentro(null, DayOfWeek.TUESDAY,
-                    LocalTime.of(8, 0), LocalTime.of(18, 0), centro1);
-
-            HorarioCentro hc3 = new HorarioCentro(null, DayOfWeek.WEDNESDAY,
-                    LocalTime.of(9, 0), LocalTime.of(18, 0), centro2);
-
-            HorarioCentro hc4 = new HorarioCentro(null, DayOfWeek.FRIDAY,
-                    LocalTime.of(9, 0), LocalTime.of(15, 0), centro2);                    
-            
-            horarioCentroRepo.saveAll(List.of(hc1, hc2, hc3,hc4));
 
             // 6. --- FUNCIONARIOS DE SALUD ---
             FuncSalud func1 = new FuncSalud("12345678-9", "Carlos", "Pérez",
                     "912345678", "serranosimon21@gmail.com",
-                    LocalDate.of(1985, 3, 15), null,
+                    LocalDate.of(1985, 3, 15), new ArrayList<>(),
                     NotificacionPreferencia.CORREOELECTRONICO,
                     centro1);
             FuncSalud func2 = new FuncSalud("98765432-1", "Ana", "González",
                     "923738870", "serranosimon21@gmail.com",
-                    LocalDate.of(1990, 7, 20), null,
+                    LocalDate.of(1990, 7, 20), new ArrayList<>(),
                     NotificacionPreferencia.SMS,
                     centro1);
             FuncSalud func3 = new FuncSalud("22121545-1", "Alfredo", "Castro",
                     "923738870", "serranosimon21@gmail.com",
-                    LocalDate.of(1990, 7, 20), null,
+                    LocalDate.of(1990, 7, 20), new ArrayList<>(),
                     NotificacionPreferencia.SMS,
                     centro2);
             FuncSalud func4 = new FuncSalud("21955190-3", "Thomas", "Sankara",
                     "923738870", "serranosimon21@gmail.com",
-                    LocalDate.of(1990, 7, 20), null,
+                    LocalDate.of(1990, 7, 20), new ArrayList<>(),
                     NotificacionPreferencia.SMS,
                     centro2);                                
             
@@ -164,10 +161,10 @@ public class DemoApplication {
             func2.setPassword(passwordEncoder.encode("func123"));
             func3.setPassword(passwordEncoder.encode("func123"));
             func4.setPassword(passwordEncoder.encode("func123"));
-            funcSaludRepo.saveAll(List.of(func1, func2,func3,func4));
+            
 
             // 7. --- HORARIOS FUNCIONARIO ---
-            ArrayList<HorarioFs> horarioFs = new ArrayList<>();
+        
             LocalTime horaBase1 = LocalTime.of(8, 0);
             LocalTime horaBase2 = LocalTime.of(12, 0);
             LocalTime horaBase3 = LocalTime.of(9, 0);
@@ -182,18 +179,18 @@ public class DemoApplication {
                 LocalTime inicio4 = horaBase4.plusMinutes(i * 15L);
                 LocalTime fin4 = horaBase4.plusMinutes((i + 1) * 15L);
                 HorarioFs hf1 = new HorarioFs(DayOfWeek.MONDAY, inicio1, fin1, func1);  
-                horarioFs.add(hf1);     
+                func1.getHorarios().add(hf1);     
                 HorarioFs hf2 = new HorarioFs(DayOfWeek.TUESDAY, inicio2, fin2, func2);  
-                horarioFs.add(hf2);
+                func2.getHorarios().add(hf2);
                 HorarioFs hf3 = new HorarioFs(DayOfWeek.WEDNESDAY, inicio3, fin3, func3); 
-                horarioFs.add(hf3);
+                func3.getHorarios().add(hf3);
                 HorarioFs hf4 = new HorarioFs(DayOfWeek.FRIDAY, inicio4, fin4, func4); 
-                horarioFs.add(hf4);
+                func4.getHorarios().add(hf4);
             }
 
-
+            funcSaludRepo.saveAll(List.of(func1, func2,func3,func4));
           
-            horarioFsRepo.saveAll(horarioFs);
+           
 
             // 8. --- PACIENTES ---
             Paciente paciente1 = new Paciente("7382025-1", "María", "López",
@@ -211,8 +208,7 @@ public class DemoApplication {
             paciente2.setPassword(passwordEncoder.encode("clave123"));
             pacienteRepo.saveAll(List.of(paciente1, paciente2));
 
-             paciente1.solicitarCita(1L, 1L, proximoLunes10am, gestorCitas); //Cambio
-             //funcSaludService.registrarVacunacion(1L,"11111111-1", "12345678-9", "sin obs");
+             
         };
     }
 }

@@ -26,7 +26,7 @@ public class GestorCitas {
     private ValidadorCita validadorCita;
 
     @Autowired
-    private CitaRepo citaRepo;
+    private CitaService citaService;
 
 
     @Transactional
@@ -43,8 +43,7 @@ public class GestorCitas {
         paciente.addCita(cita);
         gestorNotificaciones.notificarConfirmacionCita(cita);
 
-        // equivalente a citaRepo.agregarCita(cita)
-        citaRepo.save(cita);
+        citaService.guardar(cita);
         return cita;
     
     }
