@@ -11,6 +11,7 @@ import com.example.demo.service.FuncSaludService;
 import com.example.demo.service.GestorCitas;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -53,10 +54,16 @@ public class CitaController {
         return ResponseEntity.ok(citas.stream().map(CitaResponseDTO::from).toList());
     }
 
+    // solo los participantes de la cita pueden verla, el paciente citado o el  funcionario citado. El RUT sale del token, así nadie ve citas ajenas por id.
     @GetMapping("/{id}")
-    public ResponseEntity<CitaResponseDTO> obtener(@PathVariable Long id) {
+    @PreAuthorize("hasAnyRole('PACIENTE','FUNCIONARIO')")
+    public ResponseEntity<CitaResponseDTO> obtener(@PathVariable Long id, Authentication auth) {
         Cita cita = citaRepo.findById(id)
                 .orElseThrow(() -> new ValidacionCitaException("Cita no encontrada"));
+        String rut = auth.getName();
+        if (!cita.getPaciente().getRUT().equals(rut) && !cita.getFuncSalud().getRUT().equals(rut)) {
+            throw new AccessDeniedException("Solo puede ver citas en las que participa");
+        }
         return ResponseEntity.ok(CitaResponseDTO.from(cita));
     }
 
