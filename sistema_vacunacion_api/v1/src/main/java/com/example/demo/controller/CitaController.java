@@ -67,11 +67,15 @@ public class CitaController {
         return ResponseEntity.ok(CitaResponseDTO.from(cita));
     }
 
+    // Solo el funcionario citado puede marcar la inasistencia de su cita
     @PatchMapping("/{id}/inasistencia")
     @PreAuthorize("hasRole('FUNCIONARIO')")
-    public ResponseEntity<String> marcarInasistencia(@PathVariable Long id) {
+    public ResponseEntity<String> marcarInasistencia(@PathVariable Long id, Authentication auth) {
         Cita cita = citaRepo.findById(id)
                 .orElseThrow(() -> new ValidacionCitaException("Cita no encontrada"));
+        if (!cita.getFuncSalud().getRUT().equals(auth.getName())) {
+            throw new AccessDeniedException("Solo puede marcar inasistencia en sus propias citas");
+        }
         funcSaludService.marcarCitaComoInasistida(cita);
         return ResponseEntity.ok("Cita marcada como inasistida");
     }
