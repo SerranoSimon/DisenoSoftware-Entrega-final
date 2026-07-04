@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Search, CheckCircle, ArrowLeft, ArrowRight, AlertCircle, Syringe, Calendar } from 'lucide-react';
 import { StatusBadge } from '../components/StatusBadge';
-import { StockPill } from '../components/StockPill';
 import { Button } from "../components/ui/button";
 import { CENTERS, campaignsWithStock, TIME_SLOTS } from '../models/data';
 import { initials, fmtDate, fmtDateShort } from '../lib/utils';
@@ -40,7 +39,7 @@ export function AppointmentScreen() {
   };
 
   const canNext =
-    (step === 1 && !!center) || (step === 2 && !!campaign && !!vaccine) ||
+    (step === 1 && !!center) || (step === 2 && !!campaign) ||
     (step === 3 && !!date) || (step === 4 && !!time) || step === 5;
 
   function reset() {
@@ -119,33 +118,27 @@ export function AppointmentScreen() {
           </div>
         )}
 
-        {/* STEP 2 — Campaign/vaccine selector */}
+        {/* STEP 2 — Campaign selector (la vacuna la asigna el sistema; el paciente la ve al confirmar) */}
         {step === 2 && (
           <div className="p-6">
             <div className="mb-5">
               <h3 className="text-[14px] font-bold text-slate-900">Paso 2 — Campaña de vacunación</h3>
-              <p className="text-[12px] text-slate-500 mt-0.5">Campañas con stock disponible en <strong>{center?.name}</strong></p>
+              <p className="text-[12px] text-slate-500 mt-0.5">Seleccione la campaña. La vacuna se asigna automáticamente y se le informará al confirmar la cita.</p>
             </div>
             <div className="space-y-3">
-              {available.map((c) => (
-                <div key={c.id} onClick={() => { setCampaign(c); setVaccine(null); }}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 ${campaign?.id === c.id ? "border-blue-500 bg-blue-50" : "border-slate-100 hover:border-slate-200"}`}
-                >
-                  <div className="font-semibold text-[13px] text-slate-900 mb-3">{c.name}</div>
-                  <div className="space-y-2">
-                    {c.vaccines.map((v) => (
-                      <label key={v.name} className="flex items-center justify-between cursor-pointer" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-2.5">
-                          <input type="radio" name="vaccine" checked={vaccine?.name === v.name && campaign?.id === c.id}
-                            onChange={() => { setCampaign(c); setVaccine(v); }} className="text-blue-600 w-4 h-4" />
-                          <span className="text-[12px] text-slate-700 font-medium">{v.name}</span>
-                        </div>
-                        <StockPill stock={v.stock} />
-                      </label>
-                    ))}
+              {available.map((c) => {
+                const isSelected = campaign?.id === c.id;
+                return (
+                  <div key={c.id} onClick={() => { setCampaign(c); setVaccine(c.vaccines[0]); }}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 flex items-center justify-between ${isSelected ? "border-blue-500 bg-blue-50" : "border-slate-100 hover:border-slate-200"}`}
+                  >
+                    <div className="font-semibold text-[13px] text-slate-900">{c.name}</div>
+                    <span className="text-[11px] text-emerald-600 font-medium flex items-center gap-1.5">
+                      <CheckCircle size={13} />Con stock disponible
+                    </span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -232,7 +225,6 @@ export function AppointmentScreen() {
                 { label: "Dirección", value: center?.address },
                 { label: "Teléfono", value: center?.phone },
                 { label: "Campaña", value: campaign?.name },
-                { label: "Vacuna seleccionada", value: vaccine?.name },
                 { label: "Fecha", value: fmtDate(date) },
                 { label: "Hora", value: time ? `${time} hrs.` : "—" },
               ].map(({ label, value }, i) => (
