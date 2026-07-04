@@ -54,10 +54,11 @@ public class Cita {
         referencedColumnName = "idVacuna"     
     )
     private Vacuna vacuna;
-    @OneToOne
+    
+    @ManyToOne
     @JoinColumn(
-        name = "campania_id",          
-        referencedColumnName = "idCampania"     
+        name = "campania_id",
+        referencedColumnName = "idCampania"
     )
     private Campania campania;
 

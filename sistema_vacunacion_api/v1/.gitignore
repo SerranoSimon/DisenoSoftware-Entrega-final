@@ -3,6 +3,11 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+.env
+
+# Archivos de seguridad temporales — solo para pruebas locales
+src/main/java/com/example/demo/security/SecurityConfigTemporal.java
+src/main/java/com/example/demo/security/TestAuthFilter.java
 
 ### STS ###
 .apt_generated
