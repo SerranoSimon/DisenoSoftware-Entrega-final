@@ -39,8 +39,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // unico endpoint público
-                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                        // únicos endpoints públicos: los dos componentes de autenticación
+                        .requestMatchers(HttpMethod.POST, "/login/paciente", "/login/personal").permitAll()
                         // Consola H2 solo para desarrollo 
                         .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated())
