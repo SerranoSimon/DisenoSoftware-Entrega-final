@@ -1,11 +1,10 @@
 package com.example.demo.models;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.demo.service.GestorCitas;
+
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -27,8 +26,7 @@ public class Paciente extends Usuario implements Notificable {
         this.citas= new ArrayList<>();
     }
 
-    public void solicitarCita(Long id_camp, Long id_centro, LocalDateTime fecha_hora, GestorCitas gestorCitas){
-       Cita cita= gestorCitas.crearCita(this,fecha_hora,id_centro,id_camp);
+    public void addCita(Cita cita){
        citas.add(cita);
     };
 

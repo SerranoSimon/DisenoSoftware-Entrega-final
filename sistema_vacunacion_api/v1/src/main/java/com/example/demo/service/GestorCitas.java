@@ -40,6 +40,7 @@ public class GestorCitas {
         Vacuna v = resultadoValidacion.vacuna();
         Campania campania = resultadoValidacion.campania();
         Cita cita = new Cita(paciente, fs, fecha_hora, centro, v,campania);
+        paciente.addCita(cita);
         gestorNotificaciones.notificarConfirmacionCita(cita);
 
         // equivalente a citaRepo.agregarCita(cita)
