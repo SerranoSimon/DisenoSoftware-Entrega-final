@@ -27,7 +27,7 @@ public class ValidadorCita {
     public ResultadoValidacion validarCita(LocalDateTime fecha_hora, Long idCentro, Long idCampania){
 
         //revisamos que la fecha_hora de solicitud sea de al menos 1 hora de antelacion
-        if(!LocalDateTime.now().minusHours(1).isBefore(fecha_hora)){
+        if(LocalDateTime.now().plusHours(1).isAfter(fecha_hora)){
             throw new ValidacionCitaException("Las solicitudes se deben realizar con al menos 1 hora de antelación.");
         }
         // Buscamos la campaña y el centro
@@ -38,7 +38,7 @@ public class ValidadorCita {
         if(!camp.estaActiva()){
             throw new ValidacionCitaException("La campaña no está activa");
         }        
-        CentroVacunacion c = centrosService.obtenerCentroPorId(idCentro);
+        CentroVacunacion c = centrosService.buscarCentroPorId(idCentro);
         if (c == null ) {
             throw new ValidacionCitaException("Centro no encontrado");
         }

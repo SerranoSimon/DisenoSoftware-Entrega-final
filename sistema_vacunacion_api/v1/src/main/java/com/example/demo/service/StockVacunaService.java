@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import com.example.demo.models.StockVacuna;
 import com.example.demo.models.Vacuna;
 import com.example.demo.repository.StockVacunaRepo;
-import com.example.demo.repository.VacunaRepo;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -17,14 +17,23 @@ public class StockVacunaService {
     @Autowired
     private StockVacunaRepo stockVacunaRepo;
     @Autowired
-    private VacunaRepo vacunaRepo;
+    private VacunaService vacunaService;
 
     public Vacuna reservar(StockVacuna stockVacuna) {
         stockVacuna.setCantidadReservada(stockVacuna.getCantidadReservada() + 1);
         Vacuna vacuna = stockVacuna.getVacunas().remove(stockVacuna.getVacunas().size() -1 ); // sacamos la ultima vacuna de la lista
         vacuna.setStockVacuna(null);
-        vacunaRepo.save(vacuna);
+        vacunaService.guardar(vacuna);
         stockVacunaRepo.save(stockVacuna);
         return vacuna;
     }
+    void guardar(StockVacuna sv){
+        stockVacunaRepo.save(sv);
+    }
+
+    StockVacuna buscarPorId(Long id){
+        return stockVacunaRepo.findById(id)
+             .orElseThrow(() -> new EntityNotFoundException("Stock vacuna no encontrado con id: " + id));
+    }
+
 }

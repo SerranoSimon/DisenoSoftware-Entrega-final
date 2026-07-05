@@ -12,6 +12,7 @@ import com.example.demo.models.NotificacionFactory;
 import com.example.demo.models.NotificacionPreferencia;
 import com.example.demo.models.Paciente;
 import com.example.demo.models.SMSFactory;
+import com.example.demo.models.Vacunacion;
 
 // Clase experta en gestionar la forma en que se notifica.
 @Service
@@ -19,11 +20,11 @@ public class GestorNotificaciones {
     @Autowired
     EmailService emailService;
     public void notificarConfirmacionCita(Cita cita) {
-        notificarConfirmacionPaciente(cita.getPaciente(), cita);
-        notificarConfirmacionFuncSalud(cita.getFuncSalud(), cita);
+        notificarConfirmacionCitaPaciente(cita.getPaciente(), cita);
+        notificarConfirmacionCitaFuncSalud(cita.getFuncSalud(), cita);
     }
 
-    private void notificarConfirmacionPaciente(Paciente paciente, Cita cita) {
+    private void notificarConfirmacionCitaPaciente(Paciente paciente, Cita cita) {
         NotificacionPreferencia preferencia = paciente.getNotificacionPreferencia();
         NotificacionFactory factory = getFactory(preferencia);
         String asunto = "Confirmacion de cita vacunacion";
@@ -40,7 +41,7 @@ public class GestorNotificaciones {
         notificacion.enviarMensaje(paciente.getDatosContactoDestinatario(), asunto, mensaje);
     }
 
-        private void notificarConfirmacionFuncSalud(FuncSalud funcSalud, Cita cita) {
+    private void notificarConfirmacionCitaFuncSalud(FuncSalud funcSalud, Cita cita) {
         NotificacionPreferencia preferencia = funcSalud.getNotificacionPreferencia();
         NotificacionFactory factory = getFactory(preferencia);
         String asunto = "Confirmacion de cita vacunacion";
@@ -53,6 +54,25 @@ public class GestorNotificaciones {
         " y atenderá a " + cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos();
         Notificacion notificacion = factory.crearNotificacion();
         notificacion.enviarMensaje(funcSalud.getDatosContactoDestinatario(), asunto, mensaje);
+    }
+    public void notificarConfirmacionVacunacionPaciente(Vacunacion vacunacion) {
+        Cita cita = vacunacion.getCita();
+        Paciente paciente = cita.getPaciente();
+        NotificacionPreferencia preferencia = paciente.getNotificacionPreferencia();
+        NotificacionFactory factory = getFactory(preferencia);
+       
+        String asunto = "Confirmacion de inoculación de vacuna";
+        String mensaje = "Estimado Paciente.\n" +
+        "Usted " +
+        paciente.getNombres() + " " + paciente.getApellidos() +
+        " Ha sido vacunado contra " + cita.getCampania().getNombre() +
+        ".\n Con la vacuna "+ cita.getVacuna().getTipoVacuna().getNombre() + "#" + cita.getVacuna().getIdVacuna() + ",en el centro " + cita.getCentroVacunacion().getNombre() +
+        ".\nUbicado en " + cita.getCentroVacunacion().getDireccion() +
+        ".\n Hora de inoculación : " + vacunacion.getFecha_hora() +
+        " Fue atendido por " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() +
+        ".\nRecuerde ingresar a la plataforma para reportar su estado tras la inoculación.";
+        Notificacion notificacion = factory.crearNotificacion();
+        notificacion.enviarMensaje(paciente.getDatosContactoDestinatario(), asunto, mensaje);
     }
 
     private NotificacionFactory getFactory(NotificacionPreferencia pref) {

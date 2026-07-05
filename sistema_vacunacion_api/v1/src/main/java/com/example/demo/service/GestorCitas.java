@@ -11,7 +11,7 @@ import com.example.demo.models.FuncSalud;
 import com.example.demo.models.Paciente;
 import com.example.demo.models.ResultadoValidacion;
 import com.example.demo.models.Vacuna;
-import com.example.demo.repository.CitaRepo;
+
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -20,13 +20,12 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class GestorCitas {
 
-    @Autowired
-    private GestorNotificaciones gestorNotificaciones;
+    
     @Autowired
     private ValidadorCita validadorCita;
 
     @Autowired
-    private CitaRepo citaRepo;
+    private CitaService citaService;
 
 
     @Transactional
@@ -40,10 +39,8 @@ public class GestorCitas {
         Vacuna v = resultadoValidacion.vacuna();
         Campania campania = resultadoValidacion.campania();
         Cita cita = new Cita(paciente, fs, fecha_hora, centro, v,campania);
-        gestorNotificaciones.notificarConfirmacionCita(cita);
-
-        // equivalente a citaRepo.agregarCita(cita)
-        citaRepo.save(cita);
+        paciente.addCita(cita);
+        citaService.guardar(cita);
         return cita;
     
     }

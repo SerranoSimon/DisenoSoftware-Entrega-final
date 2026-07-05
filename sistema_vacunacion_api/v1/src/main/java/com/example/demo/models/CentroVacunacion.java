@@ -31,7 +31,7 @@ public class CentroVacunacion {
     private List<StockVacuna> stockVacunas = new ArrayList<>();
     @OneToMany(mappedBy = "centroVacunacion", cascade = CascadeType.ALL)
     private List<FuncSalud> funcionariosSalud = new ArrayList<>();
-    @OneToMany(mappedBy = "centroVacunacion", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "centroVacunacion", cascade = CascadeType.ALL, orphanRemoval = true) //orphanRemoval=true ya que si se borra centro, no tiene sentido guardar el horario
     private List<HorarioCentro> horarios = new ArrayList<>();
     @OneToMany(mappedBy = "centroVacunacion", cascade = CascadeType.ALL)
     private List<Cita> citas = new ArrayList<>();

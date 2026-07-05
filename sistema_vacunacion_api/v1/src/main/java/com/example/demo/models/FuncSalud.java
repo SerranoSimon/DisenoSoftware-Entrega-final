@@ -5,12 +5,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+
 import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor  
@@ -19,7 +21,7 @@ import lombok.NoArgsConstructor;
 public class FuncSalud extends Usuario implements Notificable{
     @OneToMany(mappedBy = "funcSalud")
     private List<Cita> citas;
-    @OneToMany(mappedBy = "funcSalud")
+    @OneToMany(mappedBy = "funcSalud", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HorarioFs> horarios;
 
     @ManyToOne
@@ -50,6 +52,11 @@ public class FuncSalud extends Usuario implements Notificable{
     public CentroVacunacion getCentroVacunacion(){
         return centroVacunacion;
     }
+    
+    public List<HorarioFs> getHorarios(){
+        return horarios;
+    }
+    
     public void setCentroVacunacion(CentroVacunacion centro){
         this.centroVacunacion = centro;
     }

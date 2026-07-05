@@ -14,10 +14,8 @@ import com.example.demo.models.HorarioCentro;
 import com.example.demo.models.StockVacuna;
 import com.example.demo.models.Vacuna;
 import com.example.demo.repository.CentrosRepo;
-import com.example.demo.repository.FuncSaludRepo;
-import com.example.demo.repository.HorarioCentroRepo;
-import com.example.demo.repository.StockVacunaRepo;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -25,16 +23,15 @@ import lombok.AllArgsConstructor;
 public class CentroService {
     @Autowired
     private final CentrosRepo centrosRepo;
+
     @Autowired
-    private final HorarioCentroRepo hCentroRepo;
-    @Autowired
-    private final FuncSaludRepo fsRepo;
-    @Autowired 
-    private final StockVacunaRepo stockVacunaRepo;
+    private final FuncSaludService fsService;
     @Autowired
     private final StockVacunaService stockVacunaService;
-    public CentroVacunacion obtenerCentroPorId(Long id){
-        return centrosRepo.getReferenceById(id);
+
+    public CentroVacunacion buscarCentroPorId(Long id){
+        return centrosRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Centro no encontrado con id: " + id));
     }
 
     
@@ -71,21 +68,22 @@ public class CentroService {
     }
 
    public void agregarHorario(Long centroId, HorarioCentro horario) {
-        CentroVacunacion centro = centrosRepo.getReferenceById(centroId);
+        CentroVacunacion centro = buscarCentroPorId(centroId);
+        centro.getHorarios().add(horario);
         horario.setCentroVacunacion(centro);
-        hCentroRepo.save(horario);
+        centrosRepo.save(centro);
     }
 
     public void agregarFuncionario(Long centroId, FuncSalud funcSalud) {
-        CentroVacunacion centro = centrosRepo.getReferenceById(centroId);
+        CentroVacunacion centro = buscarCentroPorId(centroId);
         funcSalud.setCentroVacunacion(centro);
-        fsRepo.save(funcSalud);
+        fsService.guardar(funcSalud);
     }
 
     public void agregarStock(Long centroId, StockVacuna stockVacuna) {
-        CentroVacunacion centro = centrosRepo.getReferenceById(centroId);
+        CentroVacunacion centro = buscarCentroPorId(centroId);
         stockVacuna.setCentroVacunacion(centro);
-        stockVacunaRepo.save(stockVacuna);
+        stockVacunaService.guardar(stockVacuna);
     }
 
 }
