@@ -75,7 +75,13 @@ export function AppointmentScreen({ onFinished }) {
     setSlotsError("");
     setTime("");
     getDisponibilidad(center.id, campaign.id, date)
-      .then((list) => { if (activo) setSlots(list.map((dt) => dt.slice(11, 16))); })
+      .then((list) => {
+        if (!activo) return;
+        const horas = list.map((dt) => dt.slice(11, 16));
+        setSlots(horas);
+        // Buen valor por defecto: preselecciona la primera hora disponible (H7)
+        if (horas.length > 0) setTime(horas[0]);
+      })
       .catch((err) => { if (activo) setSlotsError(apiError(err, "No se pudieron cargar las horas disponibles.")); })
       .finally(() => { if (activo) setLoadingSlots(false); });
     return () => { activo = false; };
@@ -232,12 +238,12 @@ export function AppointmentScreen({ onFinished }) {
             </div>
             <div className="border rounded-2xl overflow-hidden" style={{ borderColor: "#E2E8F0" }}>
               <div className="flex items-center justify-between px-5 py-3.5 border-b" style={{ background: "#F8FAFC", borderColor: "#E2E8F0" }}>
-                <button onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); } else setCalMonth(calMonth - 1); }}
+                <button aria-label="Mes anterior" onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1); } else setCalMonth(calMonth - 1); }}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
                   <ArrowLeft size={14} />
                 </button>
                 <span className="text-[13px] font-bold text-slate-800 capitalize">{monthName}</span>
-                <button onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(calYear + 1); } else setCalMonth(calMonth + 1); }}
+                <button aria-label="Mes siguiente" onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(calYear + 1); } else setCalMonth(calMonth + 1); }}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
                   <ArrowRight size={14} />
                 </button>

@@ -4,6 +4,7 @@ import { fmtDate, initials } from '../lib/utils';
 import { getCita } from '../api/citaService';
 import { registrarVacunacion } from '../api/vacunacionService';
 import { apiError } from '../api/axiosConfig';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export function VaccinationScreen({ citaId, onBack, onDone }) {
   const [cita, setCita] = useState(null);
@@ -13,6 +14,7 @@ export function VaccinationScreen({ citaId, onBack, onDone }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [resultado, setResultado] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -31,6 +33,7 @@ export function VaccinationScreen({ citaId, onBack, onDone }) {
       setResultado(res);
     } catch (err) {
       setSubmitError(apiError(err, "No se pudo registrar la vacunación."));
+      setConfirmOpen(false);
     } finally {
       setSubmitting(false);
     }
@@ -165,13 +168,24 @@ export function VaccinationScreen({ citaId, onBack, onDone }) {
             <button onClick={onBack} className="flex items-center gap-2 px-5 py-2.5 text-[12px] font-bold text-slate-600 border rounded-xl hover:bg-slate-50 transition-all" style={{ borderColor: "#E2E8F0" }}>
               <X size={14} />Cancelar
             </button>
-            <button onClick={handleSubmit} disabled={submitting}
+            <button onClick={() => setConfirmOpen(true)} disabled={submitting}
               className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white text-[12px] font-bold rounded-xl transition-all duration-150 shadow-sm hover:shadow-md">
               {submitting ? <><Loader2 size={14} className="animate-spin" />Registrando…</> : <><CheckCircle size={14} />Registrar Vacunación</>}
             </button>
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Confirmar registro de vacunación"
+        message={`Se registrará la vacunación de ${cita.pacienteNombre}. Esta acción no se puede deshacer.`}
+        confirmLabel="Sí, registrar"
+        tone="primary"
+        loading={submitting}
+        onConfirm={handleSubmit}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 }

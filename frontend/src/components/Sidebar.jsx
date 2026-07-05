@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Shield, LogOut, LayoutDashboard, Calendar, ListChecks } from 'lucide-react';
+import { ConfirmDialog } from './ConfirmDialog';
+import { initials } from '../lib/utils';
 
 // Menú según el rol autenticado.
 const NAV_BY_ROL = {
@@ -13,8 +15,12 @@ const NAV_BY_ROL = {
   ],
 };
 
-export function Sidebar({ rol, active, setScreen, onLogout }) {
+export function Sidebar({ rol, userName, active, setScreen, onLogout }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const nav = NAV_BY_ROL[rol] || [];
+  const rolLabel = rol === 'FUNCIONARIO' ? 'Personal de salud' : 'Paciente';
+  const nombre = userName || rolLabel;
+  const avatar = userName ? initials(userName) : (rol === 'FUNCIONARIO' ? 'FS' : 'PA');
   // El detalle/vacunación se resaltan según la lista de la que provienen.
   const visibleActive = (['detalleCita', 'vaccination']).includes(active)
     ? (rol === 'FUNCIONARIO' ? 'atender' : 'misCitas')
@@ -46,19 +52,32 @@ export function Sidebar({ rol, active, setScreen, onLogout }) {
           );
         })}
       </nav>
-      <div className="border-t p-3" style={{ borderColor: "#E2E8F0" }}>
-        <button onClick={onLogout}
-          className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors text-left">
+      <div className="border-t p-3 space-y-2" style={{ borderColor: "#E2E8F0" }}>
+        <div className="flex items-center gap-2.5 p-2.5">
           <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-extrabold text-blue-700">{rol === 'FUNCIONARIO' ? 'FS' : 'PA'}</span>
+            <span className="text-xs font-extrabold text-blue-700">{avatar}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[12px] font-semibold text-slate-800 truncate">{rol === 'FUNCIONARIO' ? 'Personal de salud' : 'Paciente'}</div>
-            <div className="text-[10px] text-slate-400 truncate">Cerrar sesión</div>
+            <div className="text-[12px] font-semibold text-slate-800 truncate">{nombre}</div>
+            <div className="text-[10px] text-slate-400 truncate">{rolLabel}</div>
           </div>
-          <LogOut size={14} className="text-slate-400 flex-shrink-0" />
+        </div>
+        <button type="button" onClick={() => setConfirmOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-[12px] font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+          style={{ borderColor: "#E2E8F0" }}>
+          <LogOut size={14} />Cerrar sesión
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Cerrar sesión"
+        message="¿Desea cerrar su sesión? Deberá iniciar sesión nuevamente para continuar."
+        confirmLabel="Cerrar sesión"
+        tone="primary"
+        onConfirm={onLogout}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </aside>
   );
 }

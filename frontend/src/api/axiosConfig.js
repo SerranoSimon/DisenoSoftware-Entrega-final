@@ -32,13 +32,23 @@ api.interceptors.response.use(
     }
 );
 
-// Extrae un mensaje legible desde un error de axios.
-// El backend siempre responde { "error": "..." } (ver GlobalExceptionHandler).
+// Extrae un mensaje legible desde un error de axios, evitando exponer jerga técnica.
+// El backend responde reglas de negocio como { "error": "..." } (ver GlobalExceptionHandler).
 export function apiError(error, fallback = 'Ocurrió un error inesperado') {
-    if (error?.response?.status === 429) {
-        return 'Demasiadas solicitudes, intente nuevamente en un minuto.';
+    // Sin respuesta del servidor -> problema de red / backend caído
+    if (!error?.response) {
+        return 'No se pudo conectar con el servidor. Verifique su conexión e intente nuevamente.';
     }
-    return error?.response?.data?.error || error?.message || fallback;
+    const status = error.response.status;
+    if (status === 429) {
+        return 'Demasiadas solicitudes. Espere un minuto e intente nuevamente.';
+    }
+    // Errores internos del servidor: no mostrar detalles técnicos crudos al usuario
+    if (status >= 500) {
+        return 'Ocurrió un problema en el servidor. Intente nuevamente en unos minutos.';
+    }
+    // Reglas de negocio / validaciones: el backend envía un mensaje claro
+    return error.response.data?.error || fallback;
 }
 
 export default api;

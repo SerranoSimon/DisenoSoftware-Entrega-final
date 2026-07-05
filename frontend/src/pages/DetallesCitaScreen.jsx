@@ -4,6 +4,7 @@ import { ApptStatusBadge } from '../components/ApptStatusBadge';
 import { fmtDate, initials } from '../lib/utils';
 import { getCita, marcarInasistencia } from '../api/citaService';
 import { apiError } from '../api/axiosConfig';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 export function DetalleCitaScreen({ citaId, rol, onBack, onRegisterVaccination }) {
   const esFuncionario = rol === 'FUNCIONARIO';
@@ -12,6 +13,7 @@ export function DetalleCitaScreen({ citaId, rol, onBack, onRegisterVaccination }
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [marcando, setMarcando] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -34,6 +36,7 @@ export function DetalleCitaScreen({ citaId, rol, onBack, onRegisterVaccination }
       setActionError(apiError(err, "No se pudo marcar la inasistencia."));
     } finally {
       setMarcando(false);
+      setConfirmOpen(false);
     }
   }
 
@@ -69,7 +72,7 @@ export function DetalleCitaScreen({ citaId, rol, onBack, onRegisterVaccination }
           <ApptStatusBadge status={cita.status} />
           {puedeAtender && (
             <>
-              <button onClick={handleMarkAbsent} disabled={marcando}
+              <button onClick={() => setConfirmOpen(true)} disabled={marcando}
                 className="flex items-center gap-2 px-4 py-2.5 text-[12px] font-bold text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition-all disabled:opacity-50">
                 {marcando ? <Loader2 size={14} className="animate-spin" /> : <UserX size={14} />}Marcar Inasistente
               </button>
@@ -172,6 +175,17 @@ export function DetalleCitaScreen({ citaId, rol, onBack, onRegisterVaccination }
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Marcar cita como inasistida"
+        message={`¿Confirma que ${cita.pacienteNombre} no se presentó a la cita? Esta acción no se puede deshacer.`}
+        confirmLabel="Sí, marcar inasistencia"
+        tone="danger"
+        loading={marcando}
+        onConfirm={handleMarkAbsent}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 }

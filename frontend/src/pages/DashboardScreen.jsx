@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Syringe, Calendar, CheckCircle, UserX, ChevronRight, ListChecks, Loader2, AlertCircle } from 'lucide-react';
+import { Syringe, Calendar, CheckCircle, ChevronRight, ListChecks, Loader2, AlertCircle } from 'lucide-react';
 import { ApptStatusBadge } from '../components/ApptStatusBadge';
 import { fmtDateShort } from '../lib/utils';
 import { getMisCitas } from '../api/citaService';
@@ -23,12 +23,11 @@ export function DashboardScreen({ setScreen, onViewDetail }) {
   const stats = [
     { label: "Citas agendadas", value: count("scheduled"), icon: Calendar, color: "blue" },
     { label: "Vacunaciones completadas", value: count("completed"), icon: CheckCircle, color: "emerald" },
-    { label: "Inasistencias", value: count("missed"), icon: UserX, color: "red" },
     { label: "Total de citas", value: citas.length, icon: Syringe, color: "violet" },
   ];
   const iconCls = {
     blue: "bg-blue-50 text-blue-600", emerald: "bg-emerald-50 text-emerald-600",
-    violet: "bg-violet-50 text-violet-600", red: "bg-red-50 text-red-500",
+    violet: "bg-violet-50 text-violet-600",
   };
 
   const recientes = [...citas].sort((a, b) => (b.fechaHora || "").localeCompare(a.fechaHora || "")).slice(0, 5);
@@ -47,7 +46,7 @@ export function DashboardScreen({ setScreen, onViewDetail }) {
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="bg-white rounded-2xl border shadow-sm p-5" style={{ borderColor: "#E2E8F0" }}>
             <div className="flex items-start justify-between mb-3">
