@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Search, CheckCircle, ArrowLeft, ArrowRight, AlertCircle, Loader2, Building2 } from 'lucide-react';
-import { Button } from "../components/ui/button";
 import { fmtDate } from '../lib/utils';
-import { getCentros } from '../api/centroService';
-import { getCampanias } from '../api/campaniaService';
+import { getCentros, getDisponibilidad } from '../api/centroService';
 import { crearCita } from '../api/citaService';
 import { apiError } from '../api/axiosConfig';
 
 export const STEP_LABELS = ["Centro", "Campaña", "Fecha", "Hora", "Revisión", "Confirmación"];
-const TIME_SLOTS = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
+
+// DayOfWeek del backend (getDay() de JS: 0=domingo … 6=sábado)
+const DOW_TO_JS = { SUNDAY: 0, MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5, SATURDAY: 6 };
 
 export function AppointmentScreen({ onFinished }) {
   const [step, setStep] = useState(1);
@@ -18,11 +18,15 @@ export function AppointmentScreen({ onFinished }) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
 
-  // Datos del backend
+  // Centros del backend (cada uno trae horarios y campanias activas con stock)
   const [centros, setCentros] = useState([]);
-  const [campanias, setCampanias] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [dataError, setDataError] = useState("");
+
+  // Horas disponibles (endpoint de disponibilidad)
+  const [slots, setSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [slotsError, setSlotsError] = useState("");
 
   // Envío
   const [submitting, setSubmitting] = useState(false);
@@ -31,9 +35,9 @@ export function AppointmentScreen({ onFinished }) {
 
   useEffect(() => {
     let activo = true;
-    Promise.all([getCentros(), getCampanias()])
-      .then(([cs, cps]) => { if (activo) { setCentros(cs); setCampanias(cps); } })
-      .catch((err) => { if (activo) setDataError(apiError(err, "No se pudieron cargar centros y campañas.")); })
+    getCentros()
+      .then((cs) => { if (activo) setCentros(cs); })
+      .catch((err) => { if (activo) setDataError(apiError(err, "No se pudieron cargar los centros.")); })
       .finally(() => { if (activo) setLoadingData(false); });
     return () => { activo = false; };
   }, []);
@@ -43,7 +47,10 @@ export function AppointmentScreen({ onFinished }) {
       (c.direccion || "").toLowerCase().includes(centerQuery.toLowerCase())
   );
 
-  // Calendar helpers
+  const campaniasCentro = center?.campanias || [];
+  const openDows = new Set((center?.horarios || []).map((h) => DOW_TO_JS[h.diaSemana]));
+
+  // Calendario
   const today = new Date();
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -56,17 +63,39 @@ export function AppointmentScreen({ onFinished }) {
     const dow = d.getDay();
     const todayStr = today.toISOString().split("T")[0];
     const dStr = d.toISOString().split("T")[0];
-    return dow === 0 || dow === 6 || dStr <= todayStr;
+    // Deshabilita pasado/hoy y los días en que el centro no abre
+    return dStr <= todayStr || !openDows.has(dow);
   };
+
+  // Al entrar al paso 4, consulta las horas realmente disponibles para (centro, campaña, fecha)
+  useEffect(() => {
+    if (step !== 4 || !center || !campaign || !date) return;
+    let activo = true;
+    setLoadingSlots(true);
+    setSlotsError("");
+    setTime("");
+    getDisponibilidad(center.id, campaign.id, date)
+      .then((list) => { if (activo) setSlots(list.map((dt) => dt.slice(11, 16))); })
+      .catch((err) => { if (activo) setSlotsError(apiError(err, "No se pudieron cargar las horas disponibles.")); })
+      .finally(() => { if (activo) setLoadingSlots(false); });
+    return () => { activo = false; };
+  }, [step, center, campaign, date]);
 
   const canNext =
     (step === 1 && !!center) || (step === 2 && !!campaign) ||
     (step === 3 && !!date) || (step === 4 && !!time) || step === 5;
 
+  function seleccionarCentro(c) {
+    setCenter(c); setCampaign(null); setDate(""); setTime("");
+  }
+  function seleccionarCampania(c) {
+    setCampaign(c); setDate(""); setTime("");
+  }
+
   function reset() {
     setStep(1); setCenter(null); setCampaign(null);
     setDate(""); setTime(""); setCenterQuery("");
-    setSubmitError(""); setCitaCreada(null);
+    setSubmitError(""); setCitaCreada(null); setSlots([]);
   }
 
   async function confirmar() {
@@ -139,48 +168,53 @@ export function AppointmentScreen({ onFinished }) {
               <div className="py-8 text-center text-[12px] text-slate-400">No se encontraron centros.</div>
             ) : (
               <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
-                {filteredCenters.map((c) => (
-                  <button key={c.id} onClick={() => setCenter(c)}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-150 ${center?.id === c.id ? "border-blue-500 bg-blue-50" : "border-slate-100 bg-slate-50 hover:border-slate-200 hover:bg-white"}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <Building2 size={16} className="text-blue-600" />
+                {filteredCenters.map((c) => {
+                  const nCamp = (c.campanias || []).length;
+                  return (
+                    <button key={c.id} onClick={() => seleccionarCentro(c)}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-150 ${center?.id === c.id ? "border-blue-500 bg-blue-50" : "border-slate-100 bg-slate-50 hover:border-slate-200 hover:bg-white"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                          <Building2 size={16} className="text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-[13px] text-slate-900">{c.nombre}</div>
+                          <div className="text-[11px] text-slate-500 mt-0.5">{c.direccion}</div>
+                        </div>
+                        <span className="text-[10px] text-slate-400 flex-shrink-0">{nCamp} campaña{nCamp !== 1 ? "s" : ""}</span>
                       </div>
-                      <div>
-                        <div className="font-semibold text-[13px] text-slate-900">{c.nombre}</div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">{c.direccion}</div>
-                        {c.tipo && <div className="text-[10px] text-slate-400 mt-0.5">{c.tipo}</div>}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
         )}
 
-        {/* STEP 2 — Campaña (la vacuna la asigna el sistema; se informa al confirmar) */}
+        {/* STEP 2 — Campaña (solo activas con stock en este centro) */}
         {step === 2 && (
           <div className="p-6">
             <div className="mb-5">
               <h3 className="text-[14px] font-bold text-slate-900">Paso 2 — Campaña de vacunación</h3>
-              <p className="text-[12px] text-slate-500 mt-0.5">Seleccione la campaña. La vacuna se asigna automáticamente y se le informará al confirmar la cita.</p>
+              <p className="text-[12px] text-slate-500 mt-0.5">Campañas con stock disponible en <strong>{center?.nombre}</strong>. La vacuna se asigna automáticamente y se le informará al confirmar.</p>
             </div>
-            {loadingData ? (
-              <div className="py-10 text-center"><Loader2 size={26} className="text-slate-300 mx-auto animate-spin" /></div>
-            ) : campanias.length === 0 ? (
-              <div className="py-8 text-center text-[12px] text-slate-400">No hay campañas disponibles.</div>
+            {campaniasCentro.length === 0 ? (
+              <div className="py-8 text-center text-[12px] text-slate-400 rounded-xl border" style={{ borderColor: "#E2E8F0" }}>
+                Este centro no tiene campañas con stock disponible actualmente.
+              </div>
             ) : (
               <div className="space-y-3">
-                {campanias.map((c) => {
+                {campaniasCentro.map((c) => {
                   const isSelected = campaign?.id === c.id;
                   return (
-                    <div key={c.id} onClick={() => setCampaign(c)}
+                    <div key={c.id} onClick={() => seleccionarCampania(c)}
                       className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 flex items-center justify-between ${isSelected ? "border-blue-500 bg-blue-50" : "border-slate-100 hover:border-slate-200"}`}
                     >
                       <div className="font-semibold text-[13px] text-slate-900">{c.nombre}</div>
-                      <span className="text-[11px] text-slate-500 font-medium">{c.estado}</span>
+                      <span className="text-[11px] text-emerald-600 font-medium flex items-center gap-1.5">
+                        <CheckCircle size={13} />Con stock
+                      </span>
                     </div>
                   );
                 })}
@@ -189,12 +223,12 @@ export function AppointmentScreen({ onFinished }) {
           </div>
         )}
 
-        {/* STEP 3 — Fecha */}
+        {/* STEP 3 — Fecha (solo días en que el centro abre) */}
         {step === 3 && (
           <div className="p-6">
             <div className="mb-5">
               <h3 className="text-[14px] font-bold text-slate-900">Paso 3 — Seleccione fecha</h3>
-              <p className="text-[12px] text-slate-500 mt-0.5">Días hábiles disponibles (lunes a viernes)</p>
+              <p className="text-[12px] text-slate-500 mt-0.5">Días habilitados según el horario de <strong>{center?.nombre}</strong></p>
             </div>
             <div className="border rounded-2xl overflow-hidden" style={{ borderColor: "#E2E8F0" }}>
               <div className="flex items-center justify-between px-5 py-3.5 border-b" style={{ background: "#F8FAFC", borderColor: "#E2E8F0" }}>
@@ -238,20 +272,33 @@ export function AppointmentScreen({ onFinished }) {
           </div>
         )}
 
-        {/* STEP 4 — Hora */}
+        {/* STEP 4 — Hora (solo horas realmente disponibles) */}
         {step === 4 && (
           <div className="p-6">
             <div className="mb-5">
               <h3 className="text-[14px] font-bold text-slate-900">Paso 4 — Seleccione hora</h3>
               <p className="text-[12px] text-slate-500 mt-0.5">Horas disponibles para el <span className="font-semibold text-slate-700">{fmtDate(date)}</span></p>
             </div>
-            <div className="grid grid-cols-4 gap-2.5">
-              {TIME_SLOTS.map((t) => (
-                <button key={t} onClick={() => setTime(t)}
-                  className={`py-3 rounded-xl border-2 text-[13px] font-bold transition-all duration-150 ${time === t ? "border-blue-500 bg-blue-600 text-white shadow-md" : "border-slate-100 text-slate-700 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"}`}
-                >{t}</button>
-              ))}
-            </div>
+            {loadingSlots ? (
+              <div className="py-10 text-center"><Loader2 size={26} className="text-slate-300 mx-auto animate-spin" /></div>
+            ) : slotsError ? (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex gap-3">
+                <AlertCircle size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
+                <p className="text-[12px] text-red-700 font-medium">{slotsError}</p>
+              </div>
+            ) : slots.length === 0 ? (
+              <div className="py-8 text-center text-[12px] text-slate-400 rounded-xl border" style={{ borderColor: "#E2E8F0" }}>
+                No hay horas disponibles para esta fecha. Pruebe con otro día.
+              </div>
+            ) : (
+              <div className="grid grid-cols-4 gap-2.5">
+                {slots.map((t) => (
+                  <button key={t} onClick={() => setTime(t)}
+                    className={`py-3 rounded-xl border-2 text-[13px] font-bold transition-all duration-150 ${time === t ? "border-blue-500 bg-blue-600 text-white shadow-md" : "border-slate-100 text-slate-700 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"}`}
+                  >{t}</button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
