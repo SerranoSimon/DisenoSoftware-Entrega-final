@@ -1,12 +1,34 @@
 import React, { useState } from 'react';
-import { Shield, Activity, Users, ClipboardList, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { Shield, Activity, Users, ClipboardList, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from "../components/ui/button";
+import { login } from '../api/authService';
+import { apiError } from '../api/axiosConfig';
 
 export function LoginScreen({ onLogin }) {
+  const [tipo, setTipo] = useState("paciente"); // 'paciente' | 'personal'
   const [rut, setRut] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [remember, setRemember] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e) {
+    e?.preventDefault();
+    if (!rut || !password) {
+      setError("Ingrese su RUT y contraseña.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const { rol } = await login(tipo, rut.trim(), password);
+      onLogin(rol);
+    } catch (err) {
+      setError(apiError(err, "No se pudo iniciar sesión."));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen flex" style={{ background: "#F5F7FA" }}>
@@ -27,10 +49,10 @@ export function LoginScreen({ onLogin }) {
         </div>
         <div className="relative z-10 space-y-3.5">
           {[
-            { icon: Shield, text: "Acceso seguro con Clave Única del Estado" },
-            { icon: Activity, text: "Monitoreo en tiempo real de stock de vacunas" },
-            { icon: Users, text: "Gestión centralizada de pacientes y citas" },
-            { icon: ClipboardList, text: "Trazabilidad completa del historial de vacunación" },
+            { icon: Shield, text: "Acceso seguro con autenticación JWT" },
+            { icon: Activity, text: "Agendamiento y seguimiento de citas" },
+            { icon: Users, text: "Gestión de pacientes y personal de salud" },
+            { icon: ClipboardList, text: "Trazabilidad del historial de vacunación" },
           ].map(({ icon: Icon, text }) => (
             <div key={text} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
@@ -43,27 +65,36 @@ export function LoginScreen({ onLogin }) {
       </div>
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-[420px]">
-          <div className="bg-white rounded-2xl border shadow-sm p-8" style={{ borderColor: "#E2E8F0" }}>
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border shadow-sm p-8" style={{ borderColor: "#E2E8F0" }}>
             <div className="mb-7">
               <h2 className="text-xl font-bold text-slate-900">Iniciar sesión</h2>
               <p className="text-[13px] text-slate-500 mt-1">Ingrese sus credenciales para acceder al sistema</p>
             </div>
-            <button className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-blue-200 rounded-xl text-blue-700 font-semibold text-[13px] hover:bg-blue-50 transition-all mb-5">
-              <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-[9px] font-black tracking-tighter">CL</span>
-              </div>
-              Ingresar con Clave Única
-              <ChevronRight size={14} className="ml-auto text-blue-400" />
-            </button>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-slate-100" />
-              <span className="text-[11px] text-slate-400 font-medium">o continúe con RUT</span>
-              <div className="flex-1 h-px bg-slate-100" />
+
+            {/* Selector de tipo de usuario -> define el endpoint de login */}
+            <div className="grid grid-cols-2 gap-2 mb-5 p-1 rounded-xl bg-slate-100">
+              {[
+                { id: "paciente", label: "Paciente" },
+                { id: "personal", label: "Personal de salud" },
+              ].map((opt) => (
+                <button key={opt.id} type="button" onClick={() => setTipo(opt.id)}
+                  className={`py-2 rounded-lg text-[12px] font-semibold transition-all ${tipo === opt.id ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+                  {opt.label}
+                </button>
+              ))}
             </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex gap-2.5 items-start">
+                <AlertCircle size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
+                <span className="text-[12px] text-red-700 font-medium">{error}</span>
+              </div>
+            )}
+
             <div className="space-y-4">
               <div>
                 <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">RUT</label>
-                <input type="text" value={rut} onChange={(e) => setRut(e.target.value)} placeholder="12.345.678-9"
+                <input type="text" value={rut} onChange={(e) => setRut(e.target.value)} placeholder="7382025-1"
                   className="w-full px-4 py-3 rounded-xl border text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-400/25 focus:border-blue-400 transition-all"
                   style={{ background: "#F8FAFC", borderColor: "#E2E8F0" }} />
               </div>
@@ -78,19 +109,12 @@ export function LoginScreen({ onLogin }) {
                   </button>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="w-4 h-4 rounded border-slate-300 text-blue-600" />
-                  <span className="text-[13px] text-slate-600">Recordar sesión</span>
-                </label>
-                <button className="text-[13px] text-blue-600 hover:text-blue-700 font-semibold transition-colors">¿Olvidó su contraseña?</button>
-              </div>
-              <Button onClick={onLogin} className="w-full">
-                Iniciar sesión
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? <span className="flex items-center justify-center gap-2"><Loader2 size={15} className="animate-spin" />Ingresando…</span> : "Iniciar sesión"}
               </Button>
             </div>
-          </div>
-          <p className="mt-5 text-center text-[11px] text-slate-400">© 2025 Ministerio de Salud · Gobierno de Chile · Todos los derechos reservados</p>
+          </form>
+          <p className="mt-5 text-center text-[11px] text-slate-400">© 2026 Ministerio de Salud · Gobierno de Chile</p>
         </div>
       </div>
     </div>

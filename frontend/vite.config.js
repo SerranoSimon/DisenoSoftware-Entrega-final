@@ -8,4 +8,15 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  // El dev server hace de proxy hacia el backend Spring Boot.
+  // Así el navegador habla siempre con el mismo origen (localhost:5173) y
+  // evitamos CORS sin tener que tocar el backend.
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
 });

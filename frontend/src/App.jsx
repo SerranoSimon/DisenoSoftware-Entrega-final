@@ -1,51 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // Layout
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 // Pages
 import { DashboardScreen } from './pages/DashboardScreen';
 import { LoginScreen } from './pages/LoginScreen';
-import { CentersScreen } from './pages/CentersScreen';
 import { AppointmentScreen } from './pages/AppointmentScreen';
-import { MisCitasScreen } from './pages/MisCitasScreen';
+import { CitasListScreen } from './pages/MisCitasScreen';
 import { DetalleCitaScreen } from './pages/DetallesCitaScreen';
 import { VaccinationScreen } from './pages/VaccinationScreen';
+import { logout as doLogout } from './api/authService';
 
 export default function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [screen, setScreen] = useState("dashboard");
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [rol, setRol] = useState(() => sessionStorage.getItem('rol'));
+  const [screen, setScreen] = useState('dashboard');
+  const [selectedCitaId, setSelectedCitaId] = useState(null);
 
-  if (!loggedIn) return <LoginScreen onLogin={() => setLoggedIn(true)} />;
+  // El interceptor de axios dispara 'auth:logout' ante un 401 -> volvemos al login.
+  useEffect(() => {
+    const onLogout = () => setRol(null);
+    window.addEventListener('auth:logout', onLogout);
+    return () => window.removeEventListener('auth:logout', onLogout);
+  }, []);
 
-  // Función para manejar la navegación desde los detalles
-  const handleViewDetail = (appointment) => {
-    setSelectedAppointment(appointment);
-    setScreen("detalleCita");
+  const handleLogin = (loginRol) => {
+    setRol(loginRol);
+    setScreen(loginRol === 'FUNCIONARIO' ? 'atender' : 'dashboard');
   };
+
+  const handleLogout = () => {
+    doLogout();
+    setRol(null);
+    setScreen('dashboard');
+  };
+
+  if (!rol) return <LoginScreen onLogin={handleLogin} />;
+
+  const isFuncionario = rol === 'FUNCIONARIO';
+
+  const viewDetail = (id) => {
+    setSelectedCitaId(id);
+    setScreen('detalleCita');
+  };
+  const backToList = () => setScreen(isFuncionario ? 'atender' : 'misCitas');
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "#F5F7FA", fontFamily: "'Inter', sans-serif" }}>
-      <Sidebar active={screen} setScreen={setScreen} />
+      <Sidebar rol={rol} active={screen} setScreen={setScreen} onLogout={handleLogout} />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <TopBar />
+        <TopBar rol={rol} />
 
         <main className="flex-1 overflow-y-auto p-6">
-          {screen === "dashboard" && <DashboardScreen setScreen={setScreen} />}
-          {screen === "centers" && <CentersScreen setScreen={setScreen} />}
-          {screen === "appointment" && <AppointmentScreen />}
-          {screen === "misCitas" && <MisCitasScreen onViewDetail={handleViewDetail} />}
-          {screen === "detalleCita" && (
-            <DetalleCitaScreen
-              appointment={selectedAppointment}
-              onBack={() => setScreen("misCitas")}
+          {/* --- Paciente --- */}
+          {!isFuncionario && screen === 'dashboard' && (
+            <DashboardScreen setScreen={setScreen} onViewDetail={viewDetail} />
+          )}
+          {!isFuncionario && screen === 'appointment' && (
+            <AppointmentScreen onFinished={() => setScreen('misCitas')} />
+          )}
+          {!isFuncionario && screen === 'misCitas' && (
+            <CitasListScreen mode="mias" onViewDetail={viewDetail} />
+          )}
+
+          {/* --- Funcionario --- */}
+          {isFuncionario && screen === 'atender' && (
+            <CitasListScreen mode="atender" onViewDetail={viewDetail} />
+          )}
+          {isFuncionario && screen === 'vaccination' && (
+            <VaccinationScreen
+              citaId={selectedCitaId}
+              onBack={() => setScreen('detalleCita')}
+              onDone={() => setScreen('detalleCita')}
             />
           )}
-          {screen === "vaccination" && (
-            <VaccinationScreen
-              appointment={selectedAppointment}
-              onBack={() => setScreen("detalleCita")}
+
+          {/* --- Común: detalle de una cita --- */}
+          {screen === 'detalleCita' && (
+            <DetalleCitaScreen
+              citaId={selectedCitaId}
+              rol={rol}
+              onBack={backToList}
+              onRegisterVaccination={() => setScreen('vaccination')}
             />
           )}
         </main>

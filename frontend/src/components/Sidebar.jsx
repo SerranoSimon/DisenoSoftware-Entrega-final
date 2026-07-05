@@ -1,11 +1,25 @@
 import React from 'react';
-import { Shield, LogOut, LayoutDashboard, Building2, Calendar, ListChecks } from 'lucide-react';
-// Nota: Asegúrate de importar solo los iconos que realmente estás usando en este archivo.
+import { Shield, LogOut, LayoutDashboard, Calendar, ListChecks } from 'lucide-react';
 
-const NAV = [];
+// Menú según el rol autenticado.
+const NAV_BY_ROL = {
+  PACIENTE: [
+    { id: 'dashboard', label: 'Inicio', icon: LayoutDashboard },
+    { id: 'appointment', label: 'Agendar Cita', icon: Calendar },
+    { id: 'misCitas', label: 'Mis Citas', icon: ListChecks },
+  ],
+  FUNCIONARIO: [
+    { id: 'atender', label: 'Citas a atender', icon: ListChecks },
+  ],
+};
 
-export function Sidebar({ active, setScreen }) {
-  const visibleActive = (["detalleCita", "vaccination"]).includes(active) ? "misCitas" : active;
+export function Sidebar({ rol, active, setScreen, onLogout }) {
+  const nav = NAV_BY_ROL[rol] || [];
+  // El detalle/vacunación se resaltan según la lista de la que provienen.
+  const visibleActive = (['detalleCita', 'vaccination']).includes(active)
+    ? (rol === 'FUNCIONARIO' ? 'atender' : 'misCitas')
+    : active;
+
   return (
     <aside className="w-[232px] flex-shrink-0 flex flex-col h-full border-r" style={{ background: "#fff", borderColor: "#E2E8F0" }}>
       <div className="flex items-center gap-3 px-5 h-[56px] border-b" style={{ borderColor: "#E2E8F0" }}>
@@ -19,7 +33,7 @@ export function Sidebar({ active, setScreen }) {
       </div>
       <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-3 mb-2">Módulos</p>
-        {NAV.map(({ id, label, icon: Icon, badge }) => {
+        {nav.map(({ id, label, icon: Icon }) => {
           const isActive = visibleActive === id;
           return (
             <button key={id} onClick={() => setScreen(id)}
@@ -28,24 +42,22 @@ export function Sidebar({ active, setScreen }) {
             >
               <Icon size={17} className={isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"} />
               <span className="flex-1 truncate">{label}</span>
-              {badge !== undefined && (
-                <span className="w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">{badge}</span>
-              )}
             </button>
           );
         })}
       </nav>
       <div className="border-t p-3" style={{ borderColor: "#E2E8F0" }}>
-        <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
+        <button onClick={onLogout}
+          className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors text-left">
           <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-extrabold text-blue-700">MG</span>
+            <span className="text-xs font-extrabold text-blue-700">{rol === 'FUNCIONARIO' ? 'FS' : 'PA'}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[12px] font-semibold text-slate-800 truncate">María González</div>
-            <div className="text-[10px] text-slate-400 truncate">Enfermera Jefe · RM</div>
+            <div className="text-[12px] font-semibold text-slate-800 truncate">{rol === 'FUNCIONARIO' ? 'Personal de salud' : 'Paciente'}</div>
+            <div className="text-[10px] text-slate-400 truncate">Cerrar sesión</div>
           </div>
-          <LogOut size={13} className="text-slate-300 flex-shrink-0" />
-        </div>
+          <LogOut size={14} className="text-slate-400 flex-shrink-0" />
+        </button>
       </div>
     </aside>
   );
