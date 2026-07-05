@@ -1,0 +1,11 @@
+@import './fonts.css';
+@import "tailwindcss";
+@import './theme.css';
+
+/* Oculta el ojito y la "x" nativos de Edge/IE en los campos de contraseña,
+   para no duplicar el botón de mostrar/ocultar contraseña de la app.
+   Estos pseudo-elementos solo existen en Edge/IE; el resto los ignora. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
