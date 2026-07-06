@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data               
 @NoArgsConstructor  
 @AllArgsConstructor
-@Table(name = "centroVacunacion")
+@Table(name = "centro_vacunacion")
 public class CentroVacunacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

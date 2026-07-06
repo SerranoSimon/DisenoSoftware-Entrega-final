@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor  
 @AllArgsConstructor
-@Table(name = "funcSalud")
+@Table(name = "func_salud")
 public class FuncSalud extends Usuario implements Notificable{
     @OneToMany(mappedBy = "funcSalud")
     private List<Cita> citas;

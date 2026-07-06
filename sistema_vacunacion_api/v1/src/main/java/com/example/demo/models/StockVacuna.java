@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data               
-@Table(name = "stockVacuna")
+@Table(name = "stock_vacuna")
 @NoArgsConstructor
 public class StockVacuna {
     @Id
