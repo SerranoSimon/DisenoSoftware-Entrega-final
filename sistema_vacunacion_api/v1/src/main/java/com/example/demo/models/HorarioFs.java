@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,12 +20,13 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data               
-@Table(name = "horarioFs")
+@Table(name = "horario_fs")
 @NoArgsConstructor
 public class HorarioFs {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)    
     private Long idHorarioFs;
+    @Enumerated(EnumType.STRING)
     private DayOfWeek diaSemana;
     private LocalTime horaInicio;
     private LocalTime horaFin;

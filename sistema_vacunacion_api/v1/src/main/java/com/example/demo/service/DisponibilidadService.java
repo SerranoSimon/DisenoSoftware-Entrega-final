@@ -35,14 +35,14 @@ public class DisponibilidadService {
             LocalTime cursor = hc.getHoraApertura();
             while (!cursor.isAfter(hc.getHoraCierre().minusMinutes(GRANULARIDAD_MINUTOS))) {
                 LocalDateTime candidato = LocalDateTime.of(fecha, cursor);
-
-                if (candidato.isAfter(limiteAntelacion)
-                        && hayFuncionarioLibre(centro, candidato)
-                        && hayVacunaEnStock(centro, campania)) {
+                boolean funcionarioLibre = hayFuncionarioLibre(centro, candidato);
+                boolean vacunaEnStock = hayVacunaEnStock(centro, campania);
+                
+                if (candidato.isAfter(limiteAntelacion) && funcionarioLibre && vacunaEnStock) {
                     disponibles.add(candidato);
                 }
                 cursor = cursor.plusMinutes(GRANULARIDAD_MINUTOS);
-            }
+                }
         }
         return disponibles;
     }
@@ -51,6 +51,7 @@ public class DisponibilidadService {
     private boolean hayFuncionarioLibre(CentroVacunacion centro, LocalDateTime fechaHora) {
         for (FuncSalud fs : centro.getFuncionariosSalud()) {
             for (HorarioFs h : fs.getHorarios()) {
+                System.out.println(h.getHoraInicio());
                 if (h.abarca(fechaHora) && h.estaDisponible()) return true;
             }
         }

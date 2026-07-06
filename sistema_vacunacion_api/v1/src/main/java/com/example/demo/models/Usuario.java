@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Usuario {
     @Id
-    @Column(name = "RUT")
+    @Column(name = "rut")
     private String RUT;
     private String nombres;
     private String apellidos;
