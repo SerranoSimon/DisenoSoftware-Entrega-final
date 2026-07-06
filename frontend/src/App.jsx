@@ -11,8 +11,8 @@ import { DetalleCitaScreen } from './pages/DetallesCitaScreen';
 import { VaccinationScreen } from './pages/VaccinationScreen';
 import { Toast } from './components/Toast';
 import { logout as doLogout } from './api/authService';
-import { getMe } from './api/pacienteService';
-import { getCitasAtender } from './api/citaService';
+import { getMe as getPacienteMe } from './api/pacienteService';
+import { getMe as getFuncionarioMe } from './api/funcSaludService';
 
 export default function App() {
   const [rol, setRol] = useState(() => sessionStorage.getItem('rol'));
@@ -29,20 +29,17 @@ export default function App() {
     return () => window.removeEventListener('auth:logout', onLogout);
   }, []);
 
-  // Nombre del usuario logueado para mostrarlo en el sidebar y la barra superior.
-  // Paciente: GET /pacientes/me. Funcionario (sin endpoint /me): se toma de sus citas.
+  // Nombre y correo del usuario logueado para el sidebar, la barra superior y el pop-up.
+  // Paciente: GET /pacientes/me. Funcionario: GET /funcionarios/me.
   useEffect(() => {
-    if (!rol) { setUserName(""); return; }
+    if (!rol) { setUserName(""); setUserEmail(""); return; }
     let activo = true;
     (async () => {
       try {
-        if (rol === 'PACIENTE') {
-          const me = await getMe();
-          if (activo) { setUserName(`${me.nombres} ${me.apellidos}`.trim()); setUserEmail(me.correoElectronico || ""); }
-        } else {
-          const citas = await getCitasAtender();
-          if (activo && citas.length > 0) setUserName(citas[0].funcionarioNombre);
-          // El backend no expone el correo del funcionario (no hay /funcionarios/me).
+        const me = rol === 'PACIENTE' ? await getPacienteMe() : await getFuncionarioMe();
+        if (activo) {
+          setUserName(`${me.nombres} ${me.apellidos}`.trim());
+          setUserEmail(me.correoElectronico || "");
         }
       } catch {
         // Si falla, se mantiene el rótulo genérico por rol.
