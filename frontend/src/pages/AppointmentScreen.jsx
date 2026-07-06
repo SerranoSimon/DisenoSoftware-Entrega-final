@@ -87,6 +87,12 @@ export function AppointmentScreen({ onFinished, onEmailSent }) {
     return () => { activo = false; };
   }, [step, center, campaign, date]);
 
+  // Limpia el error de agendamiento cuando el usuario cambia su selección,
+  // para que el mensaje no persista tras corregir la fecha/hora.
+  useEffect(() => {
+    setSubmitError("");
+  }, [center, campaign, date, time]);
+
   const canNext =
     (step === 1 && !!center) || (step === 2 && !!campaign) ||
     (step === 3 && !!date) || (step === 4 && !!time) || step === 5;
