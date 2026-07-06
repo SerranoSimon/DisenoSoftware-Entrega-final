@@ -10,7 +10,7 @@ export const STEP_LABELS = ["Centro", "Campaña", "Fecha", "Hora", "Revisión", 
 // DayOfWeek del backend (getDay() de JS: 0=domingo … 6=sábado)
 const DOW_TO_JS = { SUNDAY: 0, MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5, SATURDAY: 6 };
 
-export function AppointmentScreen({ onFinished }) {
+export function AppointmentScreen({ onFinished, onEmailSent }) {
   const [step, setStep] = useState(1);
   const [centerQuery, setCenterQuery] = useState("");
   const [center, setCenter] = useState(null);
@@ -112,6 +112,7 @@ export function AppointmentScreen({ onFinished }) {
       const cita = await crearCita({ idCentro: center.id, idCampania: campaign.id, fechaHora });
       setCitaCreada(cita);
       setStep(6);
+      onEmailSent?.();
     } catch (err) {
       setSubmitError(apiError(err, "No se pudo agendar la cita."));
     } finally {

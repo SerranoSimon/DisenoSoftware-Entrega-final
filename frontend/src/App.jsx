@@ -9,6 +9,7 @@ import { AppointmentScreen } from './pages/AppointmentScreen';
 import { CitasListScreen } from './pages/MisCitasScreen';
 import { DetalleCitaScreen } from './pages/DetallesCitaScreen';
 import { VaccinationScreen } from './pages/VaccinationScreen';
+import { Toast } from './components/Toast';
 import { logout as doLogout } from './api/authService';
 import { getMe } from './api/pacienteService';
 import { getCitasAtender } from './api/citaService';
@@ -18,10 +19,12 @@ export default function App() {
   const [screen, setScreen] = useState('dashboard');
   const [selectedCitaId, setSelectedCitaId] = useState(null);
   const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [toastOpen, setToastOpen] = useState(false);
 
   // El interceptor de axios dispara 'auth:logout' ante un 401 -> volvemos al login.
   useEffect(() => {
-    const onLogout = () => { setRol(null); setUserName(""); };
+    const onLogout = () => { setRol(null); setUserName(""); setUserEmail(""); };
     window.addEventListener('auth:logout', onLogout);
     return () => window.removeEventListener('auth:logout', onLogout);
   }, []);
@@ -35,10 +38,11 @@ export default function App() {
       try {
         if (rol === 'PACIENTE') {
           const me = await getMe();
-          if (activo) setUserName(`${me.nombres} ${me.apellidos}`.trim());
+          if (activo) { setUserName(`${me.nombres} ${me.apellidos}`.trim()); setUserEmail(me.correoElectronico || ""); }
         } else {
           const citas = await getCitasAtender();
           if (activo && citas.length > 0) setUserName(citas[0].funcionarioNombre);
+          // El backend no expone el correo del funcionario (no hay /funcionarios/me).
         }
       } catch {
         // Si falla, se mantiene el rótulo genérico por rol.
@@ -56,6 +60,15 @@ export default function App() {
     doLogout();
     setRol(null);
     setScreen('dashboard');
+    setUserEmail("");
+    setToastOpen(false);
+  };
+
+  // Muestra el aviso de "correo enviado" (al confirmar cita o vacunación).
+  const showEmailToast = () => {
+    setToastOpen(false);
+    // reinicia el temporizador si ya estaba visible
+    requestAnimationFrame(() => setToastOpen(true));
   };
 
   if (!rol) return <LoginScreen onLogin={handleLogin} />;
@@ -70,6 +83,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "#F5F7FA", fontFamily: "'Inter', sans-serif" }}>
+      <Toast open={toastOpen} email={userEmail} onClose={() => setToastOpen(false)} />
       <Sidebar rol={rol} userName={userName} active={screen} setScreen={setScreen} onLogout={handleLogout} />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -81,7 +95,7 @@ export default function App() {
             <DashboardScreen setScreen={setScreen} onViewDetail={viewDetail} />
           )}
           {!isFuncionario && screen === 'appointment' && (
-            <AppointmentScreen onFinished={() => setScreen('misCitas')} />
+            <AppointmentScreen onFinished={() => setScreen('misCitas')} onEmailSent={showEmailToast} />
           )}
           {!isFuncionario && screen === 'misCitas' && (
             <CitasListScreen mode="mias" onViewDetail={viewDetail} />
@@ -96,6 +110,7 @@ export default function App() {
               citaId={selectedCitaId}
               onBack={() => setScreen('detalleCita')}
               onDone={() => setScreen('detalleCita')}
+              onEmailSent={showEmailToast}
             />
           )}
 

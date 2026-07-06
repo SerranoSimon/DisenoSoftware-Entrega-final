@@ -6,7 +6,7 @@ import { registrarVacunacion } from '../api/vacunacionService';
 import { apiError } from '../api/axiosConfig';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 
-export function VaccinationScreen({ citaId, onBack, onDone }) {
+export function VaccinationScreen({ citaId, onBack, onDone, onEmailSent }) {
   const [cita, setCita] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -31,6 +31,7 @@ export function VaccinationScreen({ citaId, onBack, onDone }) {
     try {
       const res = await registrarVacunacion({ idCita: citaId, observaciones: observations });
       setResultado(res);
+      onEmailSent?.();
     } catch (err) {
       setSubmitError(apiError(err, "No se pudo registrar la vacunación."));
       setConfirmOpen(false);

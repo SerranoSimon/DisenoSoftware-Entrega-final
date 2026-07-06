@@ -5,7 +5,7 @@ import { login } from '../api/authService';
 import { apiError } from '../api/axiosConfig';
 
 export function LoginScreen({ onLogin }) {
-  const [tipo, setTipo] = useState("paciente"); // 'paciente' | 'personal' | 'claveunica'
+  const [tipo, setTipo] = useState("claveunica"); // 'claveunica' (pacientes) | 'personal' (funcionarios)
   const [rut, setRut] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -13,7 +13,6 @@ export function LoginScreen({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   const esPersonal = tipo === "personal";
-  const esClaveUnica = tipo === "claveunica";
 
   function cambiarTipo(nuevo) {
     setTipo(nuevo);
@@ -21,10 +20,15 @@ export function LoginScreen({ onLogin }) {
     setPassword("");
   }
 
+  // Solo dígitos, K/k y guión; máximo 10 caracteres (9 números + guión).
+  function onRutChange(e) {
+    setRut(e.target.value.replace(/[^0-9kK-]/g, "").slice(0, 10));
+  }
+
   async function handleSubmit(e) {
     e?.preventDefault();
     if (!rut || !password) {
-      setError(esClaveUnica ? "Ingrese su RUT y Clave Única." : "Ingrese su RUT y contraseña.");
+      setError(esPersonal ? "Ingrese su RUT y contraseña." : "Ingrese su RUT y Clave Única.");
       return;
     }
     setLoading(true);
@@ -41,11 +45,9 @@ export function LoginScreen({ onLogin }) {
     }
   }
 
-  const titulo = esPersonal ? "Acceso personal de salud" : esClaveUnica ? "Ingresar con Clave Única" : "Iniciar sesión";
-  const subtitulo = esPersonal ? "Ingrese sus credenciales de funcionario"
-    : esClaveUnica ? "Ingrese su RUT y Clave Única del Estado"
-      : "Acceso para pacientes del sistema";
-  const passwordLabel = esClaveUnica ? "Clave Única" : "Contraseña";
+  const titulo = esPersonal ? "Acceso personal de salud" : "Ingresar con Clave Única";
+  const subtitulo = esPersonal ? "Ingrese sus credenciales de funcionario" : "Ingrese su RUT y Clave Única del Estado";
+  const passwordLabel = esPersonal ? "Contraseña" : "Clave Única";
 
   return (
     <div className="min-h-screen flex" style={{ background: "#F5F7FA" }}>
@@ -84,12 +86,11 @@ export function LoginScreen({ onLogin }) {
         <div className="w-full max-w-[420px]">
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl border shadow-sm p-8" style={{ borderColor: "#E2E8F0" }}>
             <div className="mb-7 flex items-center gap-3">
-              {esPersonal && (
+              {esPersonal ? (
                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
                   <Stethoscope size={19} className="text-blue-600" />
                 </div>
-              )}
-              {esClaveUnica && (
+              ) : (
                 <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-[11px] font-black tracking-tighter">CL</span>
                 </div>
@@ -110,7 +111,8 @@ export function LoginScreen({ onLogin }) {
             <div className="space-y-4">
               <div>
                 <label htmlFor="rut" className="block text-[13px] font-semibold text-slate-700 mb-1.5">RUT</label>
-                <input id="rut" name="rut" type="text" autoComplete="username" value={rut} onChange={(e) => setRut(e.target.value)} placeholder="12345678-9"
+                <input id="rut" name="rut" type="text" inputMode="text" autoComplete="username" maxLength={10}
+                  value={rut} onChange={onRutChange} placeholder="12345678-9"
                   className="w-full px-4 py-3 rounded-xl border text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-400/25 focus:border-blue-400 transition-all"
                   style={{ background: "#F8FAFC", borderColor: "#E2E8F0" }} />
                 <p className="text-[11px] text-slate-400 mt-1.5">Sin puntos y con guión (ej: 12345678-9)</p>
@@ -118,10 +120,11 @@ export function LoginScreen({ onLogin }) {
               <div>
                 <label htmlFor="password" className="block text-[13px] font-semibold text-slate-700 mb-1.5">{passwordLabel}</label>
                 <div className="relative">
-                  <input id="password" name="password" type={showPw ? "text" : "password"} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+                  <input id="password" name="password" type={showPw ? "text" : "password"} autoComplete="current-password" maxLength={64}
+                    value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
                     className="w-full px-4 py-3 pr-11 rounded-xl border text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-400/25 focus:border-blue-400 transition-all"
                     style={{ background: "#F8FAFC", borderColor: "#E2E8F0" }} />
-                  <button type="button" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  <button type="button" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "Ocultar clave" : "Mostrar clave"}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
                     {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
@@ -132,27 +135,9 @@ export function LoginScreen({ onLogin }) {
               </Button>
             </div>
 
-            {/* Acceso con Clave Única (solo en la vista de pacientes) */}
-            {tipo === "paciente" && (
-              <>
-                <div className="flex items-center gap-3 my-4">
-                  <div className="flex-1 h-px bg-slate-100" />
-                  <span className="text-[11px] text-slate-400 font-medium">o</span>
-                  <div className="flex-1 h-px bg-slate-100" />
-                </div>
-                <button type="button" onClick={() => cambiarTipo("claveunica")}
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-blue-200 rounded-xl text-blue-700 font-semibold text-[13px] hover:bg-blue-50 transition-all">
-                  <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-[9px] font-black tracking-tighter">CL</span>
-                  </div>
-                  Ingresar con Clave Única
-                </button>
-              </>
-            )}
-
             <div className="mt-6 pt-5 border-t text-center" style={{ borderColor: "#F1F5F9" }}>
-              {esPersonal || esClaveUnica ? (
-                <button type="button" onClick={() => cambiarTipo("paciente")}
+              {esPersonal ? (
+                <button type="button" onClick={() => cambiarTipo("claveunica")}
                   className="text-[13px] text-slate-600 hover:text-blue-700 font-semibold inline-flex items-center gap-1.5 transition-colors">
                   <ArrowLeft size={14} />Volver al acceso de pacientes
                 </button>
