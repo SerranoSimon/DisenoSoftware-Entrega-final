@@ -24,7 +24,7 @@ public class FuncSaludService {
         guardar(func);
     }
 
-    FuncSalud buscarPorRut(String rut){
+    public FuncSalud buscarPorRut(String rut){
         return funcSaludRepo.findById(rut).orElseThrow(() -> new EntityNotFoundException("F. de salud no encontrado con rut: " + rut));
     }
 
