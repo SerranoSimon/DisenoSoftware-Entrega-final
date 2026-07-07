@@ -40,7 +40,7 @@ public class VacunacionController {
                 vacunacion.getIdVacunacion(),
                 vacunacion.getNumDosis(),
                 vacunacion.getObservaciones(),
-                vacunacion.getFecha_hora(),
+                vacunacion.getFechaHora(),
                 dto.idCita()
         ));
     }

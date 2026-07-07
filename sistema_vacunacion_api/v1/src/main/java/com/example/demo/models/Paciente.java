@@ -30,10 +30,15 @@ public class Paciente extends Usuario implements Notificable {
        citas.add(cita);
     };
 
+    public List<Cita> getCitas(){
+        return citas;
+    }
+
     @Override
     public NotificacionPreferencia getNotificacionPreferencia() {
         return getPreferencia();
     }
+
 
 
     @Override

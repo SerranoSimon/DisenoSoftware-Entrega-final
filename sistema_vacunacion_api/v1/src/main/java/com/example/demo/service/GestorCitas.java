@@ -8,6 +8,7 @@ import com.example.demo.models.Campania;
 import com.example.demo.models.CentroVacunacion;
 import com.example.demo.models.Cita;
 import com.example.demo.models.FuncSalud;
+import com.example.demo.models.HorarioFs;
 import com.example.demo.models.Paciente;
 import com.example.demo.models.ResultadoValidacion;
 import com.example.demo.models.Vacuna;
@@ -26,15 +27,20 @@ public class GestorCitas {
 
     @Autowired
     private CitaService citaService;
+    @Autowired
+    private DisponibilidadService disponibilidadService;
 
 
     @Transactional
     // Crear cita usa al experto ValidarCita para ver si es posible crearla.
     public Cita crearCita(Paciente paciente, LocalDateTime fecha_hora, Long id_centro, Long id_campania) {
             
-        ResultadoValidacion resultadoValidacion= validadorCita.validarCita(fecha_hora,id_centro,id_campania);
+        ResultadoValidacion resultadoValidacion= validadorCita.validarCita(fecha_hora,id_centro,id_campania, paciente);
         
         FuncSalud fs = resultadoValidacion.funcionario();
+        HorarioFs horarioFs = fs.buscarBloqueHorario(fecha_hora);
+        disponibilidadService.bloquear(horarioFs, fecha_hora.toLocalDate());
+
         CentroVacunacion centro = resultadoValidacion.centro();
         Vacuna v = resultadoValidacion.vacuna();
         Campania campania = resultadoValidacion.campania();

@@ -64,8 +64,12 @@ public class StockVacuna {
     }
     // Verifica que existan vacunas disponibles
     public boolean verificarStock(){
-        if(vacunas.size()>0) return true;
-        else return false;
+        for(Vacuna v: vacunas){
+            if(v.getEstadoVacuna().equals(EstadoVacuna.DISPONIBLE)){
+                return true;
+            }
+        }
+        return false;
     }
 
 }

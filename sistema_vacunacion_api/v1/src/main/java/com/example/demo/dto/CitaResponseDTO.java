@@ -19,7 +19,7 @@ public record CitaResponseDTO(
         return new CitaResponseDTO(
                 cita.getIdCita(),
                 cita.getEstado().name(),
-                cita.getFecha_hora(),
+                cita.getFechaHora(),
                 cita.getCentroVacunacion().getNombre(),
                 cita.getCentroVacunacion().getDireccion(),
                 cita.getVacuna().getTipoVacuna().getNombre(),

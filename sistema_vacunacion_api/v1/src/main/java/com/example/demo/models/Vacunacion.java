@@ -2,6 +2,7 @@ package com.example.demo.models;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,7 +25,8 @@ public class Vacunacion {
     private Long idVacunacion;
     private Integer numDosis;
     private String observaciones;
-    private LocalDateTime fecha_hora;
+    @Column(name = "fecha_hora")
+    private LocalDateTime fechaHora;
 
     @OneToOne
     @JoinColumn(
@@ -32,4 +34,5 @@ public class Vacunacion {
         referencedColumnName = "idCita"     
     )
     private Cita cita;
+  
 }

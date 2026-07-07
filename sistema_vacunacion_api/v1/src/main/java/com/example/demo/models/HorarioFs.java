@@ -30,7 +30,6 @@ public class HorarioFs {
     private DayOfWeek diaSemana;
     private LocalTime horaInicio;
     private LocalTime horaFin;
-    private boolean bloqueado;
     @ManyToOne
     @JoinColumn(
         name = "funcSalud_rut",           
@@ -42,7 +41,6 @@ public class HorarioFs {
         this.diaSemana = diaSemana;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
-        this.bloqueado = false;
         this.funcSalud = funcSalud;
     }
 
@@ -50,14 +48,6 @@ public class HorarioFs {
     public boolean abarca(LocalDateTime fechaHora){
         DayOfWeek dia = fechaHora.getDayOfWeek();
         LocalTime hora = fechaHora.toLocalTime();
-        return diaSemana.equals(dia) && !hora.isBefore(horaInicio) && !hora.isAfter(horaFin);
-    }
-    // bloquea el bloque horario
-    public void bloquear(){
-        this.bloqueado = true;
-    }
-   // devuelve si el bloque está o no disponible
-    public boolean estaDisponible(){
-        return !bloqueado;
+        return diaSemana.equals(dia) && !hora.isBefore(horaInicio) && hora.isBefore(horaFin);
     }
 }

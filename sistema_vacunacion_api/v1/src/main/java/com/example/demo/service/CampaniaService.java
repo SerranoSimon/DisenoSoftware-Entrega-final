@@ -7,7 +7,7 @@ import com.example.demo.models.Campania;
 import com.example.demo.models.StockVacuna;
 import com.example.demo.repository.CampaniaRepo;
 
-
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -22,7 +22,7 @@ public class CampaniaService {
     public void agregarVacunaACampania(Long idCampania, Long idStockVacuna) {
         //  Buscamos la campaña (o lanzamos error si no existe)
         Campania campania = campaniaRepo.findById(idCampania)
-                .orElseThrow(() -> new RuntimeException("Campaña no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Campaña no encontrada con id: " + idCampania));
 
         // Buscamos el stock de la vacuna
         StockVacuna stock = stockVacunaService.buscarPorId(idStockVacuna);

@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,16 +29,41 @@ public class GestorNotificaciones {
     private void notificarConfirmacionCitaPaciente(Paciente paciente, Cita cita) {
         NotificacionPreferencia preferencia = paciente.getNotificacionPreferencia();
         NotificacionFactory factory = getFactory(preferencia);
-        String asunto = "Confirmacion de cita vacunacion";
-        String mensaje = "Estimado Paciente.\n" +
-        "Usted " +
-        paciente.getNombres() + " " + paciente.getApellidos() +
-        " tiene una cita para vacunarse contra " + cita.getCampania().getNombre() +
-        ".\n Se le aplicará la vacuna "+ cita.getVacuna().getTipoVacuna().getNombre() + " ,en el centro " + cita.getCentroVacunacion().getNombre() +
-        ".\nUbicado en " + cita.getCentroVacunacion().getDireccion() +
-        ".\nEl horario a asistir es " + cita.getFecha_hora() +
-        " y será atendido por " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() +
-        ".\nEsperamos su asistencia y puntualidad.";
+        
+        String asunto = "Confirmación de cita de vacunación";
+        String mensaje = "Estimado/a " + paciente.getNombres() + " " + paciente.getApellidos() + ",\n\n" +
+        "Nos comunicamos para confirmar su próxima cita de vacunación correspondiente a la campaña: " + cita.getCampania().getNombre() + ".\n\n" +
+        "Detalles de su cita:\n" +
+        "- Vacuna: " + cita.getVacuna().getTipoVacuna().getNombre() + "\n" +
+        "- Centro de Vacunación: " + cita.getCentroVacunacion().getNombre() + "\n" +
+        "- Dirección: " + cita.getCentroVacunacion().getDireccion() + "\n" +
+        "- Fecha y Hora: " + cita.getFechaHora() + "\n" +
+        "- Profesional a cargo: " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() + "\n\n" +
+        "Agradecemos su puntualidad. Le recordamos que su asistencia es muy importante.\n\n" +
+        "Atentamente,\n" +
+        "El equipo de Salud";
+        
+        Notificacion notificacion = factory.crearNotificacion();
+        notificacion.enviarMensaje(paciente.getDatosContactoDestinatario(), asunto, mensaje);
+    }
+    public void notificarCitaInasistidaPaciente( Cita cita, LocalDateTime hora_inasistencia) {
+        Paciente paciente = cita.getPaciente();
+        NotificacionPreferencia preferencia = paciente.getNotificacionPreferencia();
+        NotificacionFactory factory = getFactory(preferencia);
+        
+        String asunto = "Inasistencia a cita de vacunación";
+        String mensaje = "Estimado/a " + paciente.getNombres() + " " + paciente.getApellidos() + ",\n\n" +
+        "Nos comunicamos para informar que su cita de vacunación: " + "\n\n" +
+        "- Campaña: " + cita.getCampania().getNombre() + "\n" +
+        "- Vacuna: " + cita.getVacuna().getTipoVacuna().getNombre() + "\n" +
+        "- Centro de Vacunación: " + cita.getCentroVacunacion().getNombre() + "\n" +
+        "- Dirección: " + cita.getCentroVacunacion().getDireccion() + "\n" +
+        "- Fecha y Hora: " + cita.getFechaHora() + "\n" +
+        "- Profesional a cargo: " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() + "\n\n" +
+        "Ha sido marcada como inasistida a eso de las : .\n\n" +
+        "Atentamente,\n" +
+        "El equipo de Salud";
+        
         Notificacion notificacion = factory.crearNotificacion();
         notificacion.enviarMensaje(paciente.getDatosContactoDestinatario(), asunto, mensaje);
     }
@@ -44,33 +71,42 @@ public class GestorNotificaciones {
     private void notificarConfirmacionCitaFuncSalud(FuncSalud funcSalud, Cita cita) {
         NotificacionPreferencia preferencia = funcSalud.getNotificacionPreferencia();
         NotificacionFactory factory = getFactory(preferencia);
-        String asunto = "Confirmacion de cita vacunacion";
-        String mensaje = "Estimado Funcionario de la salud.\n" +
-        "Usted " +
-        funcSalud.getNombres() + " " + funcSalud.getApellidos() +
-        ". Tiene que aplicar una vacuna " + cita.getVacuna().getTipoVacuna().getNombre() + " ,en el centro " + cita.getCentroVacunacion().getNombre() +
-        ".\nUbicacado en " + cita.getCentroVacunacion().getDireccion() +
-        ".\nEl horario de vacunación es " + cita.getFecha_hora() +
-        " y atenderá a " + cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos();
+        
+        String asunto = "Asignación de nueva cita de vacunación";
+        String mensaje = "Estimado/a " + funcSalud.getNombres() + " " + funcSalud.getApellidos() + ",\n\n" +
+        "Se le ha asignado una nueva cita para administrar una vacuna. A continuación, le detallamos la información del procedimiento:\n\n" +
+        "Detalles de la cita:\n" +
+        "- Paciente a atender: " + cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos() + "\n" +
+        "- Vacuna a administrar: " + cita.getVacuna().getTipoVacuna().getNombre() + "\n" +
+        "- Centro de Vacunación: " + cita.getCentroVacunacion().getNombre() + "\n" +
+        "- Dirección: " + cita.getCentroVacunacion().getDireccion() + "\n" +
+        "- Fecha y Hora: " + cita.getFechaHora() + "\n\n" +
+        "Atentamente,\n" +
+        "Sistema de Gestión de Citas";
+        
         Notificacion notificacion = factory.crearNotificacion();
         notificacion.enviarMensaje(funcSalud.getDatosContactoDestinatario(), asunto, mensaje);
     }
+
     public void notificarConfirmacionVacunacionPaciente(Vacunacion vacunacion) {
         Cita cita = vacunacion.getCita();
         Paciente paciente = cita.getPaciente();
         NotificacionPreferencia preferencia = paciente.getNotificacionPreferencia();
         NotificacionFactory factory = getFactory(preferencia);
-       
-        String asunto = "Confirmacion de inoculación de vacuna";
-        String mensaje = "Estimado Paciente.\n" +
-        "Usted " +
-        paciente.getNombres() + " " + paciente.getApellidos() +
-        " Ha sido vacunado contra " + cita.getCampania().getNombre() +
-        ".\n Con la vacuna "+ cita.getVacuna().getTipoVacuna().getNombre() + "#" + cita.getVacuna().getIdVacuna() + ",en el centro " + cita.getCentroVacunacion().getNombre() +
-        ".\nUbicado en " + cita.getCentroVacunacion().getDireccion() +
-        ".\n Hora de inoculación : " + vacunacion.getFecha_hora() +
-        " Fue atendido por " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() +
-        ".\nRecuerde ingresar a la plataforma para reportar su estado tras la inoculación.";
+        
+        String asunto = "Confirmación de inoculación: " + cita.getCampania().getNombre();
+        String mensaje = "Estimado/a " + paciente.getNombres() + " " + paciente.getApellidos() + ",\n\n" +
+        "Este mensaje confirma que ha sido vacunado/a exitosamente en el marco de la campaña: " + cita.getCampania().getNombre() + ".\n\n" +
+        "Registro de la inoculación:\n" +
+        "- Vacuna administrada: " + cita.getVacuna().getTipoVacuna().getNombre() + " (Lote/ID: #" + cita.getVacuna().getIdVacuna() + ")\n" +
+        "- Centro de Vacunación: " + cita.getCentroVacunacion().getNombre() + "\n" +
+        "- Dirección: " + cita.getCentroVacunacion().getDireccion() + "\n" +
+        "- Fecha y Hora de inoculación: " + vacunacion.getFechaHora() + "\n" +
+        "- Profesional a cargo: " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() + "\n\n" +
+        "IMPORTANTE: Le recordamos ingresar a nuestra plataforma para reportar su estado de salud tras la inoculación.\n\n" +
+        "Atentamente,\n" +
+        "El equipo de Salud";
+        
         Notificacion notificacion = factory.crearNotificacion();
         notificacion.enviarMensaje(paciente.getDatosContactoDestinatario(), asunto, mensaje);
     }

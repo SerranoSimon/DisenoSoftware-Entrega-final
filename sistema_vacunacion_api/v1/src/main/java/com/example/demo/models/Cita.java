@@ -26,7 +26,8 @@ public class Cita {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idCita")
     private Long idCita;
-    private LocalDateTime fecha_hora;
+    @Column(name = "fecha_hora")
+    private LocalDateTime fechaHora;
     @Enumerated(EnumType.STRING)
     private EstadoCita estado;
     @ManyToOne
@@ -69,11 +70,11 @@ public class Cita {
     )
     private Vacunacion vacunacion;
 
-    public Cita(Paciente paciente, FuncSalud funcionario, LocalDateTime fecha_hora,
+    public Cita(Paciente paciente, FuncSalud funcionario, LocalDateTime fechaHora,
             CentroVacunacion centro, Vacuna vacuna, Campania camp) {
             this.paciente = paciente;
             this.funcSalud = funcionario;
-            this.fecha_hora = fecha_hora;
+            this.fechaHora = fechaHora;
             this.centroVacunacion = centro;
             this.vacuna= vacuna;
             this.estado = EstadoCita.VIGENTE;
@@ -89,20 +90,13 @@ public class Cita {
             throw new IllegalStateException("La cita fue marcada como inasistida");
         }
         LocalDateTime ahora = LocalDateTime.now();
-        if (ahora.isBefore(fecha_hora)) {
+        if (ahora.isBefore(fechaHora)) {
             throw new IllegalStateException("La cita aún no ha comenzado");
         }
 
     }
 
-    public void validarParticipantes(FuncSalud func, Paciente paciente) {
-        if (!this.funcSalud.equals(func)) {
-            throw new IllegalStateException("El funcionario que vacuna no es el citado");
-        }
-        if (!this.paciente.equals(paciente)) {
-            throw new IllegalStateException("El paciente a vacunar no es el citado");
-        }
-    }
+
 
 
 

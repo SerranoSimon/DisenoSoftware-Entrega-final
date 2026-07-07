@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.example.demo.models.Paciente;
 import com.example.demo.repository.PacienteRepo;
 
@@ -18,4 +17,5 @@ public class PacienteService {
         return pacienteRepo.findById(rut)
         .orElseThrow(() -> new EntityNotFoundException("Paciente no encontrado con rut: " + rut));
     }
+
 }

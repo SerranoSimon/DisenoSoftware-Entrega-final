@@ -1,7 +1,10 @@
 package com.example.demo.service;
 
 import com.example.demo.models.*;
-import lombok.AllArgsConstructor;
+import com.example.demo.repository.HorarioBloqueoRepo;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -12,14 +15,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DisponibilidadService {
 
-    private static final int GRANULARIDAD_MINUTOS = 15;
-
+    private final HorarioBloqueoRepo horarioBloqueoRepository;
     private final CentroService centroService;
     private final CampaniaService campaniaService;
 
+    private static final int GRANULARIDAD_MINUTOS = 15;
+
+    
     public List<LocalDateTime> horariosDisponibles(Long idCentro, LocalDate fecha, Long idCampania) {
         CentroVacunacion centro = centroService.buscarCentroPorId(idCentro);
         Campania campania = campaniaService.obtenerCampaniaPorId(idCampania);
@@ -35,34 +40,41 @@ public class DisponibilidadService {
             LocalTime cursor = hc.getHoraApertura();
             while (!cursor.isAfter(hc.getHoraCierre().minusMinutes(GRANULARIDAD_MINUTOS))) {
                 LocalDateTime candidato = LocalDateTime.of(fecha, cursor);
-                boolean funcionarioLibre = hayFuncionarioLibre(centro, candidato);
-                boolean vacunaEnStock = hayVacunaEnStock(centro, campania);
-                
-                if (candidato.isAfter(limiteAntelacion) && funcionarioLibre && vacunaEnStock) {
+
+                if (candidato.isAfter(limiteAntelacion) && buscarFsDisponible(centro, candidato)!=null) {
                     disponibles.add(candidato);
                 }
                 cursor = cursor.plusMinutes(GRANULARIDAD_MINUTOS);
-                }
+            }
         }
         return disponibles;
     }
 
-    // Solo lectura: no llama h.bloquear()
-    private boolean hayFuncionarioLibre(CentroVacunacion centro, LocalDateTime fechaHora) {
+    // Solo lectura: revisa la plantilla recurrente (abarca) + el bloqueo puntual por fecha
+    public FuncSalud buscarFsDisponible(CentroVacunacion centro, LocalDateTime fechaHora) {
+        LocalDate fecha = fechaHora.toLocalDate();
         for (FuncSalud fs : centro.getFuncionariosSalud()) {
             for (HorarioFs h : fs.getHorarios()) {
-                System.out.println(h.getHoraInicio());
-                if (h.abarca(fechaHora) && h.estaDisponible()) return true;
+                if (h.abarca(fechaHora) && estaDisponible(h, fecha)) {
+                    return fs;
+                }
             }
         }
-        return false;
+        return null;
     }
 
-    // Solo lectura: no llama stockVacunaService.reservar()
-    private boolean hayVacunaEnStock(CentroVacunacion centro, Campania campania) {
-        for (StockVacuna sv : centro.getStockVacunas()) {
-            if (sv.vacunaEsDeCampania(campania) && sv.verificarStock()) return true;
-        }
-        return false;
+    public boolean estaDisponible(HorarioFs horarioFs, LocalDate fecha) {
+        return !horarioBloqueoRepository.existsByHorarioFsAndFecha(horarioFs, fecha);
     }
+
+    // Bloquea solo esa fecha, no todos los días de la semana equivalentes
+    public void bloquear(HorarioFs horarioFs, LocalDate fecha) {
+        if (!estaDisponible(horarioFs, fecha)) {
+            return; // ya estaba bloqueado
+        }
+        HorarioBloqueo bloqueo = new HorarioBloqueo(horarioFs, fecha);
+        horarioBloqueoRepository.save(bloqueo);
+    }
+
+
 }

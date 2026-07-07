@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS stock_vacuna (
 CREATE TABLE IF NOT EXISTS vacuna (
     id_vacuna SERIAL PRIMARY KEY,
     tipo_vacuna_id INT REFERENCES tipo_vacuna(id_tipo_vacuna) ON DELETE CASCADE,
-    stock_vacuna_id INT REFERENCES stock_vacuna("idStockVacuna") ON DELETE CASCADE
+    stock_vacuna_id INT REFERENCES stock_vacuna("idStockVacuna") ON DELETE CASCADE,
+    estado_vacuna VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS func_salud (
@@ -65,10 +66,14 @@ CREATE TABLE IF NOT EXISTS horario_fs (
     dia_semana VARCHAR(20) NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fin TIME NOT NULL,
-    bloqueado BOOLEAN DEFAULT FALSE,
     func_salud_rut VARCHAR(12) REFERENCES func_salud(rut) ON DELETE CASCADE
 );
-
+CREATE TABLE IF NOT EXISTS horario_bloqueo (
+    id_horario_bloqueo SERIAL PRIMARY KEY,
+    horario_fs_id INT NOT NULL REFERENCES horario_fs(id_horario_fs) ON DELETE CASCADE,
+    fecha DATE NOT NULL,
+    UNIQUE (horario_fs_id, fecha)
+);
 CREATE TABLE IF NOT EXISTS paciente (
     rut VARCHAR(12) PRIMARY KEY,
     nombres VARCHAR(100) NOT NULL,
@@ -118,8 +123,9 @@ ALTER SEQUENCE tipo_vacuna_id_tipo_vacuna_seq RESTART WITH 4;
 -- 2.5 Perfiles de Stock de Vacunas
 INSERT INTO stock_vacuna ("idStockVacuna", cantidad_reservada, campania_id, centro_id, tipo_vacuna_id) VALUES
 (1, 0, 1, 1, 1), -- Stock 1: Covid, CESFAM O'Higgins, Pfizer
-(2, 0, 1, 2, 2), -- Stock 2: Covid, CESFAM VMF, Astrazeneca
-(3, 0, 2, 2, 3); -- Stock 3: Influenza, CESFAM VMF, Influvac
+(2, 0, 1, 1, 2), -- Stock 2: Covid, CESFAM O'Higgins, Astrazeneca
+(3, 0, 1, 2, 2), -- Stock 3: Covid, CESFAM VMF, Astrazeneca
+(4, 0, 2, 2, 3); -- Stock 4: Influenza, CESFAM VMF, Influvac
 
 ALTER SEQUENCE "stock_vacuna_idStockVacuna_seq" RESTART WITH 4;
 
@@ -161,7 +167,7 @@ BEGIN
         inicio_4 := (TIME '11:00:00' + (i * 15 || ' minutes')::INTERVAL);
         fin_4    := (TIME '11:00:00' + ((i + 1) * 15 || ' minutes')::INTERVAL);
 
-        -- Fíjate que aquí usamos func_salud_rut
+        
         INSERT INTO horario_fs (dia_semana, hora_inicio, hora_fin, func_salud_rut) VALUES
         ('MONDAY', inicio_1, fin_1, '12345678-9'),
         ('TUESDAY', inicio_2, fin_2, '98765432-1'),
@@ -170,11 +176,12 @@ BEGIN
     END LOOP;
 
     -- 3.2 Generación Física del Inventario de Vacunas (10 unidades por tipo)
-    FOR i IN 1..10 LOOP
+    FOR i IN 1..2 LOOP
         -- Fíjate que aquí usamos stock_vacuna_id
-        INSERT INTO vacuna (tipo_vacuna_id, stock_vacuna_id) VALUES 
-        (1, 1),  
-        (2, 2),  
-        (3, 3);  
+        INSERT INTO vacuna (tipo_vacuna_id, stock_vacuna_id, estado_vacuna) VALUES 
+        (1, 1, 'DISPONIBLE'),
+        (2, 2, 'DISPONIBLE'),  
+        (2, 3, 'DISPONIBLE'),  
+        (3, 4, 'DISPONIBLE');  
     END LOOP;
-END $$; -- ¡Este es el cierre que faltaba y hacía que fallara todo!
+END $$; 

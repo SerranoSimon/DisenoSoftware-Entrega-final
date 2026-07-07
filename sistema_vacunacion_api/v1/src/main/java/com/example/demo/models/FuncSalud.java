@@ -38,23 +38,19 @@ public class FuncSalud extends Usuario implements Notificable{
 
 
     }
-     // Busca entre los horarios del funcionario para ver si puede atender en cierta fecha_hora,
-    // si es que puede, lo bloquea (será asignado a la cita que se creará).
-    public boolean disponible(LocalDateTime fechaHora){
-        for(HorarioFs h: horarios){
-            if(h.abarca(fechaHora) && h.estaDisponible()){
-                h.bloquear();
-                return true;
-            }
-        }
-        return false;
-    }
+
     public CentroVacunacion getCentroVacunacion(){
         return centroVacunacion;
     }
     
     public List<HorarioFs> getHorarios(){
         return horarios;
+    }
+    public HorarioFs buscarBloqueHorario(LocalDateTime fechaHora){
+        for(HorarioFs h: horarios){
+            if(h.abarca(fechaHora)) return h;
+        }
+        return null;
     }
     
     public void setCentroVacunacion(CentroVacunacion centro){
