@@ -25,6 +25,9 @@ export function VaccinationScreen({ citaId, onBack, onDone, onEmailSent }) {
     return () => { activo = false; };
   }, [citaId]);
 
+  // Limpia el error de registro al editar las observaciones.
+  useEffect(() => { setSubmitError(""); }, [observations]);
+
   async function handleSubmit() {
     setSubmitting(true);
     setSubmitError("");

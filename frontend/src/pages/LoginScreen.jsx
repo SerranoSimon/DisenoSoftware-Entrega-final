@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Activity, Users, ClipboardList, Eye, EyeOff, AlertCircle, Loader2, ArrowLeft, Stethoscope } from 'lucide-react';
 import { Button } from "../components/ui/button";
 import { login } from '../api/authService';
@@ -13,6 +13,9 @@ export function LoginScreen({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   const esPersonal = tipo === "personal";
+
+  // Limpia el error al editar el RUT o la clave, para que no persista tras un intento fallido.
+  useEffect(() => { setError(""); }, [rut, password]);
 
   function cambiarTipo(nuevo) {
     setTipo(nuevo);

@@ -72,7 +72,7 @@ export function DetalleCitaScreen({ citaId, rol, onBack, onRegisterVaccination }
           <ApptStatusBadge status={cita.status} />
           {puedeAtender && (
             <>
-              <button onClick={() => setConfirmOpen(true)} disabled={marcando}
+              <button onClick={() => { setActionError(""); setConfirmOpen(true); }} disabled={marcando}
                 className="flex items-center gap-2 px-4 py-2.5 text-[12px] font-bold text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition-all disabled:opacity-50">
                 {marcando ? <Loader2 size={14} className="animate-spin" /> : <UserX size={14} />}Marcar Inasistente
               </button>
