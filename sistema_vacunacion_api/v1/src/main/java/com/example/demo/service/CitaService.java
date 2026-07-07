@@ -15,6 +15,7 @@ import com.example.demo.models.TipoVacuna;
 import com.example.demo.repository.CitaRepo;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -62,10 +63,13 @@ public class CitaService {
         return false;
 
     }
-
+    @Transactional
     public void marcarCitaComoInasistida(Cita cita){
         LocalDateTime ahora = LocalDateTime.now();
         LocalDateTime limiteTolerancia = cita.getFechaHora().plusMinutes(5);
+        if (cita.getEstado() == EstadoCita.INASISTIDA) {
+            throw new IllegalStateException("La cita ya ha sido marcada como inasistida previamente.");
+        }
 
         if (!ahora.isAfter(limiteTolerancia)) {
             throw new IllegalStateException("Se puede marcar inasistencia despúes de 5 minutos");

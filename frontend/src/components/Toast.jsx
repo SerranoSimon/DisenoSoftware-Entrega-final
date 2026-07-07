@@ -13,7 +13,7 @@ export function Toast({ open, email, onClose }) {
   if (!open) return null;
 
   return (
-    <div className="fixed top-[68px] right-6 z-[70] w-[320px]" role="status" aria-live="polite">
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-[320px]" role="status" aria-live="polite">
       <div className="bg-white rounded-xl border shadow-lg p-4 flex gap-3" style={{ borderColor: "#E2E8F0" }}>
         <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
           <Mail size={17} className="text-emerald-600" />

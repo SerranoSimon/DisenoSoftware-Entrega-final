@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import com.example.demo.models.Vacunacion;
 public class GestorNotificaciones {
     @Autowired
     EmailService emailService;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     public void notificarConfirmacionCita(Cita cita) {
         notificarConfirmacionCitaPaciente(cita.getPaciente(), cita);
         notificarConfirmacionCitaFuncSalud(cita.getFuncSalud(), cita);
@@ -37,7 +39,7 @@ public class GestorNotificaciones {
         "- Vacuna: " + cita.getVacuna().getTipoVacuna().getNombre() + "\n" +
         "- Centro de Vacunación: " + cita.getCentroVacunacion().getNombre() + "\n" +
         "- Dirección: " + cita.getCentroVacunacion().getDireccion() + "\n" +
-        "- Fecha y Hora: " + cita.getFechaHora() + "\n" +
+        "- Fecha y Hora: " + cita.getFechaHora().format(formatter) + "\n" +
         "- Profesional a cargo: " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() + "\n\n" +
         "Agradecemos su puntualidad. Le recordamos que su asistencia es muy importante.\n\n" +
         "Atentamente,\n" +
@@ -58,9 +60,9 @@ public class GestorNotificaciones {
         "- Vacuna: " + cita.getVacuna().getTipoVacuna().getNombre() + "\n" +
         "- Centro de Vacunación: " + cita.getCentroVacunacion().getNombre() + "\n" +
         "- Dirección: " + cita.getCentroVacunacion().getDireccion() + "\n" +
-        "- Fecha y Hora: " + cita.getFechaHora() + "\n" +
+        "- Fecha y Hora: " + cita.getFechaHora().format(formatter) + "\n" +
         "- Profesional a cargo: " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() + "\n\n" +
-        "Ha sido marcada como inasistida a eso de las : .\n\n" +
+        "Ha sido marcada como inasistida a eso de las :" + hora_inasistencia.format(formatter) + ".\n\n" +
         "Atentamente,\n" +
         "El equipo de Salud";
         
@@ -80,7 +82,7 @@ public class GestorNotificaciones {
         "- Vacuna a administrar: " + cita.getVacuna().getTipoVacuna().getNombre() + "\n" +
         "- Centro de Vacunación: " + cita.getCentroVacunacion().getNombre() + "\n" +
         "- Dirección: " + cita.getCentroVacunacion().getDireccion() + "\n" +
-        "- Fecha y Hora: " + cita.getFechaHora() + "\n\n" +
+        "- Fecha y Hora: " + cita.getFechaHora().format(formatter) + "\n\n" +
         "Atentamente,\n" +
         "Sistema de Gestión de Citas";
         
@@ -101,7 +103,7 @@ public class GestorNotificaciones {
         "- Vacuna administrada: " + cita.getVacuna().getTipoVacuna().getNombre() + " (Lote/ID: #" + cita.getVacuna().getIdVacuna() + ")\n" +
         "- Centro de Vacunación: " + cita.getCentroVacunacion().getNombre() + "\n" +
         "- Dirección: " + cita.getCentroVacunacion().getDireccion() + "\n" +
-        "- Fecha y Hora de inoculación: " + vacunacion.getFechaHora() + "\n" +
+        "- Fecha y Hora de inoculación: " + vacunacion.getFechaHora().format(formatter) + "\n" +
         "- Profesional a cargo: " + cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos() + "\n\n" +
         "IMPORTANTE: Le recordamos ingresar a nuestra plataforma para reportar su estado de salud tras la inoculación.\n\n" +
         "Atentamente,\n" +

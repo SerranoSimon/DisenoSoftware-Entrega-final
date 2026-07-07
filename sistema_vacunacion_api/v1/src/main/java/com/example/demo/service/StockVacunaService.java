@@ -20,7 +20,7 @@ public class StockVacunaService {
     private StockVacunaRepo stockVacunaRepo;
     @Autowired
     private VacunaService vacunaService;
-
+    // reservamos una vacuna para  una cita
     public Vacuna reservar(StockVacuna stockVacuna) {
         // Buscamos la primera vacuna de este stock que tenga estado DISPONIBLE
         Vacuna vacuna = stockVacuna.getVacunas().stream()
@@ -31,7 +31,7 @@ public class StockVacunaService {
         // Cambiamos estado y contadores
         vacuna.setEstadoVacuna(EstadoVacuna.RESERVADA);
         stockVacuna.setCantidadReservada(stockVacuna.getCantidadReservada() + 1);
-        
+
         // Guardamos
         vacunaService.guardar(vacuna);
         stockVacunaRepo.save(stockVacuna);

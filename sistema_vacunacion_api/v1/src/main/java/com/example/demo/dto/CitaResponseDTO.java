@@ -16,13 +16,17 @@ public record CitaResponseDTO(
         String pacienteRUT
 ) {
     public static CitaResponseDTO from(Cita cita) {
+        String nombreVacuna = "No asignada (perdió la reserva)";
+        if (cita.getVacuna() != null && cita.getVacuna().getTipoVacuna() != null) {
+            nombreVacuna = cita.getVacuna().getTipoVacuna().getNombre();
+        }
         return new CitaResponseDTO(
                 cita.getIdCita(),
                 cita.getEstado().name(),
                 cita.getFechaHora(),
                 cita.getCentroVacunacion().getNombre(),
                 cita.getCentroVacunacion().getDireccion(),
-                cita.getVacuna().getTipoVacuna().getNombre(),
+                nombreVacuna,
                 cita.getFuncSalud().getNombres() + " " + cita.getFuncSalud().getApellidos(),
                 cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos(),
                 cita.getPaciente().getRUT()
