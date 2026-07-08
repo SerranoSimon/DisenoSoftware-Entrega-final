@@ -6,5 +6,6 @@ public record FuncSaludDTO(
         String apellidos,
         String correoElectronico,
         String fono,
-        String centroNombre
+        String centroNombre,
+        String preferencia
 ) {}

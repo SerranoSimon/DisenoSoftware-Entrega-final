@@ -25,7 +25,7 @@ public class FuncSaludController {
         return new FuncSaludDTO(
                 f.getRUT(), f.getNombres(), f.getApellidos(),
                 f.getCorreoElectronico(), f.getFono(),
-                f.getCentroVacunacion() != null ? f.getCentroVacunacion().getNombre() : null
+                f.getCentroVacunacion() != null ? f.getCentroVacunacion().getNombre() : null, f.getPreferencia().name()
         );
     }
 }

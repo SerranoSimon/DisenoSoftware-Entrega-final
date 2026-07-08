@@ -21,6 +21,8 @@ export default function App() {
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [toastOpen, setToastOpen] = useState(false);
+  const [userPhone, setUserPhone] = useState("");
+  const [userPreference, setUserPreference] = useState("");
 
   // El interceptor de axios dispara 'auth:logout' ante un 401 -> volvemos al login.
   useEffect(() => {
@@ -32,14 +34,25 @@ export default function App() {
   // Nombre y correo del usuario logueado para el sidebar, la barra superior y el pop-up.
   // Paciente: GET /pacientes/me. Funcionario: GET /funcionarios/me.
   useEffect(() => {
-    if (!rol) { setUserName(""); setUserEmail(""); return; }
+    if (!rol) { 
+      setUserName(""); 
+      setUserEmail(""); 
+      setUserPhone(""); 
+      setUserPreference(""); 
+      return; 
+    }
     let activo = true;
     (async () => {
       try {
         const me = rol === 'PACIENTE' ? await getPacienteMe() : await getFuncionarioMe();
         if (activo) {
+          console.log("Respuesta cruda de la API:", me);
           setUserName(`${me.nombres} ${me.apellidos}`.trim());
           setUserEmail(me.correoElectronico || "");
+          
+          // Agregamos los datos del DTO asegurando el manejo de nulos
+          setUserPhone(me.fono || ""); 
+          setUserPreference(me.preferencia || "");
         }
       } catch {
         // Si falla, se mantiene el rótulo genérico por rol.
@@ -80,7 +93,13 @@ export default function App() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "#F5F7FA", fontFamily: "'Inter', sans-serif" }}>
-      <Toast open={toastOpen} email={userEmail} onClose={() => setToastOpen(false)} />
+      <Toast 
+  open={toastOpen} 
+  email={userEmail} 
+  phone={userPhone}            
+  preference={userPreference}   
+  onClose={() => setToastOpen(false)} 
+/>
       <Sidebar rol={rol} userName={userName} active={screen} setScreen={setScreen} onLogout={handleLogout} />
 
       <div className="flex-1 flex flex-col min-w-0">

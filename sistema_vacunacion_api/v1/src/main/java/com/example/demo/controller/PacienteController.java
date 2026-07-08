@@ -24,6 +24,6 @@ public class PacienteController {
     @PreAuthorize("hasRole('PACIENTE')")
     public PacienteDTO yo(Authentication auth) {
         Paciente p = pacienteService.buscarPorRut(auth.getName());
-        return new PacienteDTO(p.getRUT(), p.getNombres(), p.getApellidos(), p.getCorreoElectronico(), p.getFono());
+        return new PacienteDTO(p.getRUT(), p.getNombres(), p.getApellidos(), p.getCorreoElectronico(), p.getFono(), p.getPreferencia().name());
     }
 }

@@ -58,14 +58,21 @@ export function AppointmentScreen({ onFinished, onEmailSent }) {
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const monthName = new Date(calYear, calMonth).toLocaleDateString("es-CL", { month: "long", year: "numeric" });
 
-  const isDisabled = (day) => {
-    const d = new Date(calYear, calMonth, day);
-    const dow = d.getDay();
-    const todayStr = today.toISOString().split("T")[0];
-    const dStr = d.toISOString().split("T")[0];
-    // Deshabilita pasado/hoy y los días en que el centro no abre
-    return dStr <= todayStr || !openDows.has(dow);
-  };
+const isDisabled = (day) => {
+  const d = new Date(calYear, calMonth, day);
+  const dow = d.getDay();
+  
+  // Clonamos 'today' para no mutar el estado original accidentalmente
+  const hoy = new Date(); 
+  
+  // Seteamos ambas fechas a la medianoche (00:00:00) en hora LOCAL
+  hoy.setHours(0, 0, 0, 0);
+  d.setHours(0, 0, 0, 0);
+
+  // Usamos estrictamente menor (<) para que HOY sí sea clickeable
+  // Si quisieras bloquear hoy, usarías <=
+  return d < hoy || !openDows.has(dow);
+};
 
   // Al entrar al paso 4, consulta las horas realmente disponibles para (centro, campaña, fecha)
   useEffect(() => {
