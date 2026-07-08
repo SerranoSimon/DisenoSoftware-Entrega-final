@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,13 +88,13 @@ public class CitaService {
         cita.setEstado(EstadoCita.COMPLETADA);
         guardar(cita);
     }
-
+    // Obtiene ultima cita valida 
     public Cita obtenerUltimaCitaParaCampania(Paciente paciente, Campania campania){
-        Cita cita = citaRepo.findFirstByPacienteAndCampaniaOrderByFechaHoraDesc(paciente, campania);
-        if(cita==null) return null;
-        if(cita.getEstado().equals(EstadoCita.VIGENTE) || cita.getEstado().equals(EstadoCita.COMPLETADA) ){
-            return cita;
-        }
-        return null;
+       List<EstadoCita> estadosValidos = Arrays.asList(EstadoCita.VIGENTE, EstadoCita.COMPLETADA);  
+       return citaRepo.findFirstByPacienteAndCampaniaAndEstadoInOrderByFechaHoraDesc(
+            paciente, 
+            campania, 
+            estadosValidos
+    );
     }
 }
