@@ -1,45 +1,37 @@
-import React, { useEffect } from 'react';
-import { Mail, MessageSquare, Send, X } from 'lucide-react'; // Importamos 'Send' para la opción AMBOS
+import React from 'react';
+import { Mail, MessageSquare, Send, X } from 'lucide-react';
 
 export function Toast({ open, email, phone, preference, onClose }) {
-  useEffect(() => {
-    if (!open) return;
-    const t = setTimeout(() => onClose?.(), 6000);
-    return () => clearTimeout(t);
-  }, [open, onClose]);
-
   if (!open) return null;
 
-  // 1. Identificamos qué preferencia viene del enum
+  // Identificamos la preferencia (fallback a correo si viene vacía)
   const isAmbos = preference === 'AMBOS';
   const isSMS = preference === 'SMS';
-  // Fallback: si no es AMBOS ni SMS, asumimos correo por defecto
-  const isCorreo = preference === 'CORREOELECTRONICO' || (!isAmbos && !isSMS); 
+  const isCorreo = preference === 'CORREOELECTRONICO' || (!isAmbos && !isSMS);
 
-  // 2. Configuramos el título y el ícono dinámicamente
   let Icon = Mail;
   let title = "Correo de confirmación enviado";
-
-  if (isAmbos) {
-    Icon = Send;
-    title = "Confirmaciones enviadas";
-  } else if (isSMS) {
-    Icon = MessageSquare;
-    title = "SMS de confirmación enviado";
-  }
+  if (isAmbos) { Icon = Send; title = "Confirmaciones enviadas"; }
+  else if (isSMS) { Icon = MessageSquare; title = "SMS de confirmación enviado"; }
 
   return (
-    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-[320px]" role="status" aria-live="polite">
-      <div className="bg-white rounded-xl border shadow-lg p-4 flex gap-3" style={{ borderColor: "#E2E8F0" }}>
-        
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-[340px]" role="status" aria-live="polite">
+      <div className="relative bg-white rounded-xl border shadow-xl p-5 pr-9 flex gap-3" style={{ borderColor: "#E2E8F0" }}>
+
+        {/* Botón cerrar (arriba a la derecha) */}
+        <button type="button" onClick={onClose} aria-label="Cerrar aviso"
+          className="absolute top-2.5 right-2.5 text-slate-400 hover:text-slate-600 transition-colors">
+          <X size={16} />
+        </button>
+
         {/* Ícono dinámico */}
         <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
           <Icon size={17} className="text-emerald-600" />
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-bold text-slate-900">{title}</div>
-          
+
           {/* --- CASO 1: AMBOS --- */}
           {isAmbos && (
             <div className="mt-1">
@@ -79,11 +71,6 @@ export function Toast({ open, email, phone, preference, onClose }) {
             </>
           )}
         </div>
-
-        <button type="button" onClick={onClose} aria-label="Cerrar aviso"
-          className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 h-fit">
-          <X size={15} />
-        </button>
       </div>
     </div>
   );

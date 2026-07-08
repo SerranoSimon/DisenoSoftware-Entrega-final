@@ -46,7 +46,6 @@ export default function App() {
       try {
         const me = rol === 'PACIENTE' ? await getPacienteMe() : await getFuncionarioMe();
         if (activo) {
-          console.log("Respuesta cruda de la API:", me);
           setUserName(`${me.nombres} ${me.apellidos}`.trim());
           setUserEmail(me.correoElectronico || "");
           
